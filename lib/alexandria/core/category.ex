@@ -37,11 +37,11 @@ defmodule Alexandria.Core.Category do
     end
 
     create :create_root do
-      accept [:id, :name, :description, :color, :sort, :metainfo]
+      accept [:slug, :name, :description, :color, :sort, :metainfo]
     end
 
     create :create_child do
-      accept [:id, :name, :description, :color, :sort, :metainfo]
+      accept [:slug, :name, :description, :color, :sort, :metainfo]
       argument :parent_id, :string, allow_nil?: false
       change manage_relationship(:parent_id, :parent, type: :append)
     end
@@ -72,11 +72,10 @@ defmodule Alexandria.Core.Category do
   end
 
   attributes do
-    attribute :id, :string do
+    attribute :slug, :string do
       primary_key? true
       allow_nil? false
       public? true
-      source :slug
     end
 
     attribute :name, Alexandria.Types.Multilingual, allow_nil?: false, public?: true
@@ -95,9 +94,11 @@ defmodule Alexandria.Core.Category do
     belongs_to :parent, __MODULE__,
       attribute_type: :string,
       source_attribute: :parent_id,
-      destination_attribute: :id,
+      destination_attribute: :slug,
       public?: true
 
-    has_many :children, __MODULE__, destination_attribute: :parent_id
+    has_many :children, __MODULE__,
+      source_attribute: :slug,
+      destination_attribute: :parent_id
   end
 end

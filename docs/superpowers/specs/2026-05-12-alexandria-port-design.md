@@ -80,12 +80,12 @@ All tables match the Django Alexandria layout exactly. Multilingual fields are J
 
 | Resource | Table | PK | Key attributes | Relations |
 |---|---|---|---|---|
-| `Alexandria.Core.Category` | `alexandria_core_category` | `id :string` (slug) | `name`, `description` (multilingual JSONB), `color :string`, `sort :integer`, `metainfo :map`, `created_at`, `modified_at`, `created_by_user :string`, `created_by_group :string` | `belongs_to :parent, Category`; `has_many :children`; `has_many :documents` |
+| `Alexandria.Core.Category` | `alexandria_core_category` | `slug :string` | `name`, `description` (multilingual JSONB), `color :string`, `sort :integer`, `metainfo :map`, `created_at`, `modified_at`, `created_by_user :string`, `created_by_group :string` | `belongs_to :parent, Category`; `has_many :children`; `has_many :documents` |
 | `Alexandria.Core.Document` | `alexandria_core_document` | `id :uuid_v4` | `title`, `description` (i18n), `date :date`, `metainfo`, audit ts/user/group | `belongs_to :category`; `has_many :files`; `many_to_many :tags, :marks` |
 | `Alexandria.Core.File` | `alexandria_core_file` | `id :uuid_v4` | `name :string`, `variant :atom` (`:original \| :thumbnail \| :rendering`), `content :string` (S3 key), `mime_type :string`, `size :integer`, `metainfo`, audit | `belongs_to :document`; `belongs_to :original, File` |
-| `Alexandria.Core.Tag` | `alexandria_core_tag` | `id :string` (slug) | `name`, `description` (i18n), `metainfo`, audit | `belongs_to :tag_synonym_group`; `many_to_many :documents` |
+| `Alexandria.Core.Tag` | `alexandria_core_tag` | `slug :string` | `name`, `description` (i18n), `metainfo`, audit | `belongs_to :tag_synonym_group`; `many_to_many :documents` |
 | `Alexandria.Core.TagSynonymGroup` | `alexandria_core_tagsynonymgroup` | `id :uuid_v4` | `name` (i18n) | `has_many :tags` |
-| `Alexandria.Core.Mark` | `alexandria_core_mark` | `id :string` (slug) | `name`, `description` (i18n), `metainfo`, audit | `many_to_many :documents` |
+| `Alexandria.Core.Mark` | `alexandria_core_mark` | `slug :string` | `name`, `description` (i18n), `metainfo`, audit | `many_to_many :documents` |
 | `Alexandria.Core.DocumentTag` | `alexandria_core_document_tags` | `(document_id, tag_id)` | — | join |
 | `Alexandria.Core.DocumentMark` | `alexandria_core_document_marks` | `(document_id, mark_id)` | — | join |
 
@@ -123,7 +123,7 @@ defmodule Alexandria.Core.Category do
   end
 
   attributes do
-    attribute :id, :string, primary_key?: true, allow_nil?: false, public?: true
+    attribute :slug, :string, primary_key?: true, allow_nil?: false, public?: true
     attribute :name, Alexandria.Types.Multilingual, allow_nil?: false, public?: true
     attribute :description, Alexandria.Types.Multilingual, public?: true
     attribute :color, :string, allow_nil?: false
@@ -139,8 +139,10 @@ defmodule Alexandria.Core.Category do
     belongs_to :parent, __MODULE__,
       attribute_type: :string,
       source_attribute: :parent_id,
-      destination_attribute: :id
-    has_many :children, __MODULE__, destination_attribute: :parent_id
+      destination_attribute: :slug
+    has_many :children, __MODULE__,
+      source_attribute: :slug,
+      destination_attribute: :parent_id
     has_many :documents, Alexandria.Core.Document
   end
 end

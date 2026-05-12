@@ -3,7 +3,7 @@ defmodule Alexandria.Core.TagTest do
 
   test "lifecycle: create, rename, join group, leave group, destroy" do
     {:ok, t} =
-      Alexandria.Core.create_tag(%{id: "urgent", name: %{"en" => "Urgent"}},
+      Alexandria.Core.create_tag(%{slug: "urgent", name: %{"en" => "Urgent"}},
         scope: admin_scope()
       )
 

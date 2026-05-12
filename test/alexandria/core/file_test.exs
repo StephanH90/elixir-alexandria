@@ -4,13 +4,13 @@ defmodule Alexandria.Core.FileTest do
   setup do
     {:ok, cat} =
       Alexandria.Core.create_root_category(
-        %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
+        %{slug: "intern", name: %{"en" => "Intern"}, color: "#000000"},
         scope: admin_scope()
       )
 
     {:ok, doc} =
       Alexandria.Core.create_document(
-        %{title: %{"en" => "Doc1"}, category_id: cat.id},
+        %{title: %{"en" => "Doc1"}, category_id: cat.slug},
         scope: admin_scope()
       )
 

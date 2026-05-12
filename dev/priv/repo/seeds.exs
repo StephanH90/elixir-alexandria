@@ -5,10 +5,10 @@ dump = dump_path |> File.read!() |> Jason.decode!()
 
 dump
 |> Enum.filter(&(&1["model"] == "alexandria_core.category"))
-|> Enum.each(fn %{"pk" => id, "fields" => f} ->
+|> Enum.each(fn %{"pk" => slug, "fields" => f} ->
   Alexandria.Core.create_root_category!(
     %{
-      id: id,
+      slug: slug,
       name: Jason.decode!(f["name"]),
       description: Jason.decode!(f["description"]),
       color: f["color"],
@@ -24,9 +24,9 @@ IO.puts("Seeded #{Alexandria.Core.list_root_categories!(scope: scope) |> length(
 
 for i <- 1..3 do
   Alexandria.Core.create_document!(
-    %{title: %{"en" => "Demo doc #{i}"}, date: ~D[2026-05-01], category_id: first.id},
+    %{title: %{"en" => "Demo doc #{i}"}, date: ~D[2026-05-01], category_id: first.slug},
     scope: scope
   )
 end
 
-IO.puts("Seeded 3 demo documents in #{first.id}")
+IO.puts("Seeded 3 demo documents in #{first.slug}")

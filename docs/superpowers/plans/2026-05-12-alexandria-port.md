@@ -662,13 +662,13 @@ defmodule Alexandria.Core.CategoryTest do
     test "creates a root category with required attributes" do
       {:ok, cat} =
         Ash.create(Category, %{
-          id: "intern",
+          slug: "intern",
           name: %{"en" => "Internal"},
           color: "#FFFFFF"
         },
         action: :create_root, scope: admin_scope())
 
-      assert cat.id == "intern"
+      assert cat.slug == "intern"
       assert cat.parent_id == nil
       assert cat.name == %{"en" => "Internal"}
       assert cat.color == "#FFFFFF"
@@ -678,7 +678,7 @@ defmodule Alexandria.Core.CategoryTest do
     test "rejects an invalid color" do
       assert {:error, _} =
         Ash.create(Category, %{
-          id: "bad", name: %{"en" => "Bad"}, color: "not-a-color"
+          slug: "bad", name: %{"en" => "Bad"}, color: "not-a-color"
         }, action: :create_root, scope: admin_scope())
     end
   end
@@ -721,7 +721,7 @@ defmodule Alexandria.Core.Category do
   end
 
   attributes do
-    attribute :id, :string, primary_key?: true, allow_nil?: false, public?: true
+    attribute :slug, :string, primary_key?: true, allow_nil?: false, public?: true
     attribute :name, Alexandria.Types.Multilingual, allow_nil?: false, public?: true
     attribute :description, Alexandria.Types.Multilingual, public?: true
     attribute :color, :string, allow_nil?: false, public?: true
@@ -737,10 +737,12 @@ defmodule Alexandria.Core.Category do
     belongs_to :parent, __MODULE__,
       attribute_type: :string,
       source_attribute: :parent_id,
-      destination_attribute: :id,
+      destination_attribute: :slug,
       public?: true
 
-    has_many :children, __MODULE__, destination_attribute: :parent_id
+    has_many :children, __MODULE__,
+      source_attribute: :slug,
+      destination_attribute: :parent_id
   end
 
   actions do
@@ -758,11 +760,11 @@ defmodule Alexandria.Core.Category do
     end
 
     create :create_root do
-      accept [:id, :name, :description, :color, :sort, :metainfo]
+      accept [:slug, :name, :description, :color, :sort, :metainfo]
     end
 
     create :create_child do
-      accept [:id, :name, :description, :color, :sort, :metainfo]
+      accept [:slug, :name, :description, :color, :sort, :metainfo]
       argument :parent_id, :string, allow_nil?: false
       change manage_relationship(:parent_id, :parent, type: :append)
     end
@@ -863,12 +865,12 @@ Append to `test/alexandria/core/category_test.exs`:
       {:ok, _} = create_root("a", sort: 2)
       {:ok, _} = create_root("b", sort: 1)
       {:ok, a} = create_root("a-parent")
-      {:ok, _} = Ash.create(Category, %{id: "child", name: %{"en" => "C"}, color: "#000000"},
+      {:ok, _} = Ash.create(Category, %{slug: "child", name: %{"en" => "C"}, color: "#000000"},
                  arguments: %{parent_id: "a-parent"},
                  action: :create_child, scope: admin_scope())
 
-      ids = Category |> Ash.Query.for_read(:list_roots, %{}, scope: admin_scope()) |> Ash.read!() |> Enum.map(& &1.id)
-      assert ids == ["b", "a", "a-parent"]
+      slugs = Category |> Ash.Query.for_read(:list_roots, %{}, scope: admin_scope()) |> Ash.read!() |> Enum.map(& &1.slug)
+      assert slugs == ["b", "a", "a-parent"]
     end
   end
 
@@ -876,23 +878,23 @@ Append to `test/alexandria/core/category_test.exs`:
     test "returns only the named parent's children" do
       {:ok, _} = create_root("p1")
       {:ok, _} = create_root("p2")
-      {:ok, _} = Ash.create(Category, %{id: "c1", name: %{"en" => "C1"}, color: "#000000"},
+      {:ok, _} = Ash.create(Category, %{slug: "c1", name: %{"en" => "C1"}, color: "#000000"},
                  arguments: %{parent_id: "p1"}, action: :create_child, scope: admin_scope())
-      {:ok, _} = Ash.create(Category, %{id: "c2", name: %{"en" => "C2"}, color: "#000000"},
+      {:ok, _} = Ash.create(Category, %{slug: "c2", name: %{"en" => "C2"}, color: "#000000"},
                  arguments: %{parent_id: "p2"}, action: :create_child, scope: admin_scope())
 
-      ids = Category
+      slugs = Category
             |> Ash.Query.for_read(:list_children, %{parent_id: "p1"}, scope: admin_scope())
             |> Ash.read!()
-            |> Enum.map(& &1.id)
-      assert ids == ["c1"]
+            |> Enum.map(& &1.slug)
+      assert slugs == ["c1"]
     end
   end
 
-  defp create_root(id, opts \\ []) do
+  defp create_root(slug, opts \\ []) do
     Ash.create(Category, %{
-      id: id,
-      name: %{"en" => id},
+      slug: slug,
+      name: %{"en" => slug},
       color: "#000000",
       sort: Keyword.get(opts, :sort, 0)
     }, action: :create_root, scope: admin_scope())
@@ -1068,7 +1070,7 @@ defmodule Alexandria.Core.Tag do
   end
 
   attributes do
-    attribute :id, :string, primary_key?: true, allow_nil?: false, public?: true
+    attribute :slug, :string, primary_key?: true, allow_nil?: false, public?: true
     attribute :name, Alexandria.Types.Multilingual, allow_nil?: false, public?: true
     attribute :description, Alexandria.Types.Multilingual, public?: true
     attribute :metainfo, :map, default: %{}, public?: true
@@ -1086,7 +1088,7 @@ defmodule Alexandria.Core.Tag do
     defaults [:read]
 
     create :create do
-      accept [:id, :name, :description, :metainfo]
+      accept [:slug, :name, :description, :metainfo]
     end
 
     update :rename do
@@ -1133,7 +1135,7 @@ defmodule Alexandria.Core.Mark do
   end
 
   attributes do
-    attribute :id, :string, primary_key?: true, allow_nil?: false, public?: true
+    attribute :slug, :string, primary_key?: true, allow_nil?: false, public?: true
     attribute :name, Alexandria.Types.Multilingual, allow_nil?: false, public?: true
     attribute :description, Alexandria.Types.Multilingual, public?: true
     attribute :metainfo, :map, default: %{}, public?: true
@@ -1147,7 +1149,7 @@ defmodule Alexandria.Core.Mark do
     defaults [:read]
 
     create :create do
-      accept [:id, :name, :description, :metainfo]
+      accept [:slug, :name, :description, :metainfo]
     end
 
     update :rename do
@@ -1202,7 +1204,7 @@ defmodule Alexandria.Core.TagTest do
   alias Alexandria.Core.{Tag, TagSynonymGroup}
 
   test "lifecycle: create, rename, join group, leave group, destroy" do
-    {:ok, t} = Ash.create(Tag, %{id: "urgent", name: %{"en" => "Urgent"}},
+    {:ok, t} = Ash.create(Tag, %{slug: "urgent", name: %{"en" => "Urgent"}},
                action: :create, scope: admin_scope())
     {:ok, t2} = Ash.update(t, %{name: %{"en" => "Very Urgent"}},
                 action: :rename, scope: admin_scope())
@@ -1230,7 +1232,7 @@ defmodule Alexandria.Core.MarkTest do
   alias Alexandria.Core.Mark
 
   test "lifecycle: create, rename, destroy" do
-    {:ok, m} = Ash.create(Mark, %{id: "important", name: %{"en" => "Important"}},
+    {:ok, m} = Ash.create(Mark, %{slug: "important", name: %{"en" => "Important"}},
                action: :create, scope: admin_scope())
     {:ok, m2} = Ash.update(m, %{name: %{"en" => "Critical"}},
                 action: :rename, scope: admin_scope())
@@ -1277,7 +1279,7 @@ defmodule Alexandria.Core.DocumentTest do
   alias Alexandria.Core.{Category, Document, Tag, Mark}
 
   setup do
-    {:ok, cat} = Ash.create(Category, %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
+    {:ok, cat} = Ash.create(Category, %{slug: "intern", name: %{"en" => "Intern"}, color: "#000000"},
                  action: :create_root, scope: admin_scope())
     {:ok, %{category: cat}}
   end
@@ -1287,10 +1289,10 @@ defmodule Alexandria.Core.DocumentTest do
       title: %{"en" => "Doc1"},
       description: %{"en" => "Desc"},
       date: ~D[2026-05-12]
-    }, arguments: %{category_id: cat.id}, action: :create, scope: admin_scope())
+    }, arguments: %{category_id: cat.slug}, action: :create, scope: admin_scope())
 
     assert d.title == %{"en" => "Doc1"}
-    assert d.category_id == cat.id
+    assert d.category_id == cat.slug
   end
 end
 ```
@@ -1326,7 +1328,11 @@ defmodule Alexandria.Core.DocumentTag do
 
   relationships do
     belongs_to :document, Alexandria.Core.Document, allow_nil?: false, public?: true
-    belongs_to :tag, Alexandria.Core.Tag, attribute_type: :string, allow_nil?: false, public?: true
+    belongs_to :tag, Alexandria.Core.Tag,
+      attribute_type: :string,
+      destination_attribute: :slug,
+      allow_nil?: false,
+      public?: true
   end
 
   actions do
@@ -1376,19 +1382,24 @@ defmodule Alexandria.Core.Document do
 
   relationships do
     belongs_to :category, Alexandria.Core.Category,
-      attribute_type: :string, allow_nil?: false, public?: true
+      attribute_type: :string,
+      destination_attribute: :slug,
+      allow_nil?: false,
+      public?: true
 
     has_many :files, Alexandria.Core.File
 
     many_to_many :tags, Alexandria.Core.Tag,
       through: Alexandria.Core.DocumentTag,
       source_attribute_on_join_resource: :document_id,
-      destination_attribute_on_join_resource: :tag_id
+      destination_attribute_on_join_resource: :tag_id,
+      destination_attribute: :slug
 
     many_to_many :marks, Alexandria.Core.Mark,
       through: Alexandria.Core.DocumentMark,
       source_attribute_on_join_resource: :document_id,
-      destination_attribute_on_join_resource: :mark_id
+      destination_attribute_on_join_resource: :mark_id,
+      destination_attribute: :slug
   end
 
   actions do
@@ -1401,12 +1412,12 @@ defmodule Alexandria.Core.Document do
 
     read :by_tag do
       argument :tag_id, :string, allow_nil?: false
-      filter expr(exists(tags, id == ^arg(:tag_id)))
+      filter expr(exists(tags, slug == ^arg(:tag_id)))
     end
 
     read :by_mark do
       argument :mark_id, :string, allow_nil?: false
-      filter expr(exists(marks, id == ^arg(:mark_id)))
+      filter expr(exists(marks, slug == ^arg(:mark_id)))
     end
 
     create :create do
@@ -1531,32 +1542,32 @@ Append to `test/alexandria/core/document_test.exs`:
 ```elixir
   describe "reads" do
     test "list_by_category filters", %{category: cat} do
-      {:ok, _} = create_doc(cat.id, "A")
-      {:ok, _} = create_doc(cat.id, "B")
-      {:ok, other} = Ash.create(Category, %{id: "other", name: %{"en" => "O"}, color: "#000000"},
+      {:ok, _} = create_doc(cat.slug, "A")
+      {:ok, _} = create_doc(cat.slug, "B")
+      {:ok, other} = Ash.create(Category, %{slug: "other", name: %{"en" => "O"}, color: "#000000"},
                      action: :create_root, scope: admin_scope())
-      {:ok, _} = create_doc(other.id, "C")
+      {:ok, _} = create_doc(other.slug, "C")
 
       titles = Document
-               |> Ash.Query.for_read(:list_by_category, %{category_id: cat.id}, scope: admin_scope())
+               |> Ash.Query.for_read(:list_by_category, %{category_id: cat.slug}, scope: admin_scope())
                |> Ash.read!()
                |> Enum.map(& &1.title["en"])
       assert Enum.sort(titles) == ["A", "B"]
     end
 
     test "by_tag filters", %{category: cat} do
-      {:ok, t} = Ash.create(Tag, %{id: "x", name: %{"en" => "X"}}, action: :create, scope: admin_scope())
-      {:ok, d} = create_doc(cat.id, "A")
-      {:ok, _} = create_doc(cat.id, "B")
-      {:ok, _} = Ash.update(d, %{}, arguments: %{tag_id: t.id}, action: :add_tag, scope: admin_scope())
-      titles = Document |> Ash.Query.for_read(:by_tag, %{tag_id: t.id}, scope: admin_scope()) |> Ash.read!() |> Enum.map(& &1.title["en"])
+      {:ok, t} = Ash.create(Tag, %{slug: "x", name: %{"en" => "X"}}, action: :create, scope: admin_scope())
+      {:ok, d} = create_doc(cat.slug, "A")
+      {:ok, _} = create_doc(cat.slug, "B")
+      {:ok, _} = Ash.update(d, %{}, arguments: %{tag_id: t.slug}, action: :add_tag, scope: admin_scope())
+      titles = Document |> Ash.Query.for_read(:by_tag, %{tag_id: t.slug}, scope: admin_scope()) |> Ash.read!() |> Enum.map(& &1.title["en"])
       assert titles == ["A"]
     end
   end
 
   describe "mutations" do
     test "rename / edit_description / set_date", %{category: cat} do
-      {:ok, d} = create_doc(cat.id, "A")
+      {:ok, d} = create_doc(cat.slug, "A")
       {:ok, d} = Ash.update(d, %{title: %{"en" => "AA"}}, action: :rename, scope: admin_scope())
       {:ok, d} = Ash.update(d, %{description: %{"en" => "desc"}}, action: :edit_description, scope: admin_scope())
       {:ok, d} = Ash.update(d, %{date: ~D[2026-01-01]}, action: :set_date, scope: admin_scope())
@@ -1566,27 +1577,27 @@ Append to `test/alexandria/core/document_test.exs`:
     end
 
     test "move_to_category", %{category: cat} do
-      {:ok, other} = Ash.create(Category, %{id: "other", name: %{"en" => "O"}, color: "#000000"},
+      {:ok, other} = Ash.create(Category, %{slug: "other", name: %{"en" => "O"}, color: "#000000"},
                      action: :create_root, scope: admin_scope())
-      {:ok, d} = create_doc(cat.id, "A")
-      {:ok, d2} = Ash.update(d, %{}, arguments: %{category_id: other.id},
+      {:ok, d} = create_doc(cat.slug, "A")
+      {:ok, d2} = Ash.update(d, %{}, arguments: %{category_id: other.slug},
                   action: :move_to_category, scope: admin_scope())
-      assert d2.category_id == other.id
+      assert d2.category_id == other.slug
     end
 
     test "add_tag/remove_tag", %{category: cat} do
-      {:ok, t} = Ash.create(Tag, %{id: "x", name: %{"en" => "X"}}, action: :create, scope: admin_scope())
-      {:ok, d} = create_doc(cat.id, "A")
-      {:ok, d} = Ash.update(d, %{}, arguments: %{tag_id: t.id}, action: :add_tag, scope: admin_scope())
+      {:ok, t} = Ash.create(Tag, %{slug: "x", name: %{"en" => "X"}}, action: :create, scope: admin_scope())
+      {:ok, d} = create_doc(cat.slug, "A")
+      {:ok, d} = Ash.update(d, %{}, arguments: %{tag_id: t.slug}, action: :add_tag, scope: admin_scope())
       d = Ash.load!(d, [:tags], scope: admin_scope())
-      assert [%{id: "x"}] = d.tags
-      {:ok, d} = Ash.update(d, %{}, arguments: %{tag_id: t.id}, action: :remove_tag, scope: admin_scope())
+      assert [%{slug: "x"}] = d.tags
+      {:ok, d} = Ash.update(d, %{}, arguments: %{tag_id: t.slug}, action: :remove_tag, scope: admin_scope())
       d = Ash.load!(d, [:tags], scope: admin_scope())
       assert d.tags == []
     end
 
     test "archive sets metainfo.archived_at then restore clears it", %{category: cat} do
-      {:ok, d} = create_doc(cat.id, "A")
+      {:ok, d} = create_doc(cat.slug, "A")
       {:ok, d} = Ash.update(d, %{}, action: :archive, scope: admin_scope())
       assert Map.has_key?(d.metainfo, "archived_at")
       {:ok, d} = Ash.update(d, %{}, action: :restore, scope: admin_scope())
@@ -1594,7 +1605,7 @@ Append to `test/alexandria/core/document_test.exs`:
     end
 
     test "destroy", %{category: cat} do
-      {:ok, d} = create_doc(cat.id, "A")
+      {:ok, d} = create_doc(cat.slug, "A")
       :ok = Ash.destroy!(d, action: :destroy, scope: admin_scope())
       assert {:error, _} = Ash.get(Document, d.id, scope: admin_scope())
     end
@@ -1819,10 +1830,10 @@ defmodule Alexandria.Core.FileTest do
   alias Alexandria.Core.{Category, Document, File}
 
   setup do
-    {:ok, cat} = Ash.create(Category, %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
+    {:ok, cat} = Ash.create(Category, %{slug: "intern", name: %{"en" => "Intern"}, color: "#000000"},
                  action: :create_root, scope: admin_scope())
     {:ok, doc} = Ash.create(Document, %{title: %{"en" => "Doc1"}},
-                 arguments: %{category_id: cat.id}, action: :create, scope: admin_scope())
+                 arguments: %{category_id: cat.slug}, action: :create, scope: admin_scope())
     {:ok, %{document: doc}}
   end
 
@@ -2136,7 +2147,7 @@ Append to `test/alexandria/core/document_test.exs`:
     {:ok, d} = Ash.create(Document, %{
       title: %{"en" => "Doc1"}
     }, arguments: %{
-      category_id: cat.id,
+      category_id: cat.slug,
       file_name: "a.pdf",
       mime_type: "application/pdf",
       size: 5,
@@ -2492,9 +2503,9 @@ dump = dump_path |> File.read!() |> Jason.decode!()
 
 dump
 |> Enum.filter(&(&1["model"] == "alexandria_core.category"))
-|> Enum.each(fn %{"pk" => id, "fields" => f} ->
+|> Enum.each(fn %{"pk" => slug, "fields" => f} ->
   Ash.create!(Category, %{
-    id: id,
+    slug: slug,
     name: Jason.decode!(f["name"]),
     description: Jason.decode!(f["description"]),
     color: f["color"],
@@ -2564,7 +2575,7 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
 
   test "page renders the seeded categories", %{conn: conn} do
     {:ok, _} = Ash.create(Alexandria.Core.Category,
-      %{id: "test-c", name: %{"en" => "TestCat"}, color: "#000000"},
+      %{slug: "test-c", name: %{"en" => "TestCat"}, color: "#000000"},
       action: :create_root, scope: AlexandriaDev.demo_scope())
 
     conn
@@ -2613,11 +2624,11 @@ alias Alexandria.Core.Document
 for i <- 1..3 do
   Ash.create!(Document,
     %{title: %{"en" => "Demo doc #{i}"}, date: ~D[2026-05-01]},
-    arguments: %{category_id: first.id},
+    arguments: %{category_id: first.slug},
     action: :create, scope: scope)
 end
 
-IO.puts("Seeded 3 demo documents in #{first.id}")
+IO.puts("Seeded 3 demo documents in #{first.slug}")
 ```
 
 Run `cd dev && mix ash.reset && mix run priv/repo/seeds.exs`.
@@ -2673,8 +2684,8 @@ defmodule AlexandriaWeb.Browser do
     <div class="uk-grid uk-grid-collapse" uk-grid>
       <aside class="uk-width-1-5">
         <ul class="uk-nav uk-nav-default">
-          <li :for={c <- @categories} class={if @selected_category == c.id, do: "uk-active"}>
-            <.link patch={category_path(@params, c.id)}>
+          <li :for={c <- @categories} class={if @selected_category == c.slug, do: "uk-active"}>
+            <.link patch={category_path(@params, c.slug)}>
               {Multilingual.get(c.name, @locale)}
             </.link>
           </li>
@@ -2765,10 +2776,10 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
 
   setup do
     scope = AlexandriaDev.demo_scope()
-    {:ok, cat} = Ash.create(Category, %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
+    {:ok, cat} = Ash.create(Category, %{slug: "intern", name: %{"en" => "Intern"}, color: "#000000"},
                  action: :create_root, scope: scope)
     {:ok, doc} = Ash.create(Document, %{title: %{"en" => "Doc A"}},
-                 arguments: %{category_id: cat.id}, action: :create, scope: scope)
+                 arguments: %{category_id: cat.slug}, action: :create, scope: scope)
     {:ok, %{category: cat, document: doc}}
   end
 

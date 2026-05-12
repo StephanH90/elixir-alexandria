@@ -6,13 +6,13 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
 
     {:ok, cat} =
       Alexandria.Core.create_root_category(
-        %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
+        %{slug: "intern", name: %{"en" => "Intern"}, color: "#000000"},
         scope: scope
       )
 
     {:ok, doc} =
       Alexandria.Core.create_document(
-        %{title: %{"en" => "Doc A"}, category_id: cat.id},
+        %{title: %{"en" => "Doc A"}, category_id: cat.slug},
         scope: scope
       )
 

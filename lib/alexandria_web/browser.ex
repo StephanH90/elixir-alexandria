@@ -57,8 +57,8 @@ defmodule AlexandriaWeb.Browser do
     <div class="uk-grid uk-grid-collapse" uk-grid>
       <aside class="uk-width-1-5">
         <ul class="uk-nav uk-nav-default">
-          <li :for={c <- @categories} class={if @selected_category == c.id, do: "uk-active"}>
-            <.link patch={category_path(@params, c.id)}>
+          <li :for={c <- @categories} class={if @selected_category == c.slug, do: "uk-active"}>
+            <.link patch={category_path(@params, c.slug)}>
               {Multilingual.get(c.name, @locale)}
             </.link>
           </li>

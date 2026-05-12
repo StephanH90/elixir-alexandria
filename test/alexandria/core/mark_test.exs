@@ -3,7 +3,7 @@ defmodule Alexandria.Core.MarkTest do
 
   test "lifecycle: create, rename, destroy" do
     {:ok, m} =
-      Alexandria.Core.create_mark(%{id: "important", name: %{"en" => "Important"}},
+      Alexandria.Core.create_mark(%{slug: "important", name: %{"en" => "Important"}},
         scope: admin_scope()
       )
 

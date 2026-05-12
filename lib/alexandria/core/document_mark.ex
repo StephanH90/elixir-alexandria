@@ -31,6 +31,7 @@ defmodule Alexandria.Core.DocumentMark do
 
     belongs_to :mark, Alexandria.Core.Mark,
       attribute_type: :string,
+      destination_attribute: :slug,
       allow_nil?: false,
       public?: true
   end

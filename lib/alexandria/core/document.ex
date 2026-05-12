@@ -22,12 +22,12 @@ defmodule Alexandria.Core.Document do
 
     read :by_tag do
       argument :tag_id, :string, allow_nil?: false
-      filter expr(exists(tags, id == ^arg(:tag_id)))
+      filter expr(exists(tags, slug == ^arg(:tag_id)))
     end
 
     read :by_mark do
       argument :mark_id, :string, allow_nil?: false
-      filter expr(exists(marks, id == ^arg(:mark_id)))
+      filter expr(exists(marks, slug == ^arg(:mark_id)))
     end
 
     read :list_by_ids do
@@ -155,18 +155,21 @@ defmodule Alexandria.Core.Document do
   relationships do
     belongs_to :category, Alexandria.Core.Category,
       attribute_type: :string,
+      destination_attribute: :slug,
       allow_nil?: false,
       public?: true
 
     many_to_many :tags, Alexandria.Core.Tag,
       through: Alexandria.Core.DocumentTag,
       source_attribute_on_join_resource: :document_id,
-      destination_attribute_on_join_resource: :tag_id
+      destination_attribute_on_join_resource: :tag_id,
+      destination_attribute: :slug
 
     many_to_many :marks, Alexandria.Core.Mark,
       through: Alexandria.Core.DocumentMark,
       source_attribute_on_join_resource: :document_id,
-      destination_attribute_on_join_resource: :mark_id
+      destination_attribute_on_join_resource: :mark_id,
+      destination_attribute: :slug
 
     has_many :files, Alexandria.Core.File
   end

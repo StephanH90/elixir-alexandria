@@ -5,11 +5,11 @@ defmodule Alexandria.Core.CategoryTest do
     test "creates a root category with required attributes" do
       {:ok, cat} =
         Alexandria.Core.create_root_category(
-          %{id: "intern", name: %{"en" => "Internal"}, color: "#FFFFFF"},
+          %{slug: "intern", name: %{"en" => "Internal"}, color: "#FFFFFF"},
           scope: admin_scope()
         )
 
-      assert cat.id == "intern"
+      assert cat.slug == "intern"
       assert cat.parent_id == nil
       assert cat.name == %{"en" => "Internal"}
       assert cat.color == "#FFFFFF"
@@ -19,7 +19,7 @@ defmodule Alexandria.Core.CategoryTest do
     test "rejects an invalid color" do
       assert {:error, _} =
                Alexandria.Core.create_root_category(
-                 %{id: "bad", name: %{"en" => "Bad"}, color: "not-a-color"},
+                 %{slug: "bad", name: %{"en" => "Bad"}, color: "not-a-color"},
                  scope: admin_scope()
                )
     end
@@ -33,15 +33,15 @@ defmodule Alexandria.Core.CategoryTest do
 
       {:ok, _} =
         Alexandria.Core.create_child_category(
-          %{id: "child", name: %{"en" => "C"}, color: "#000000", parent_id: "a-parent"},
+          %{slug: "child", name: %{"en" => "C"}, color: "#000000", parent_id: "a-parent"},
           scope: admin_scope()
         )
 
-      ids =
+      slugs =
         Alexandria.Core.list_root_categories!(scope: admin_scope())
-        |> Enum.map(& &1.id)
+        |> Enum.map(& &1.slug)
 
-      assert ids == ["b", "a", "a-parent"]
+      assert slugs == ["b", "a", "a-parent"]
     end
   end
 
@@ -52,21 +52,21 @@ defmodule Alexandria.Core.CategoryTest do
 
       {:ok, _} =
         Alexandria.Core.create_child_category(
-          %{id: "c1", name: %{"en" => "C1"}, color: "#000000", parent_id: "p1"},
+          %{slug: "c1", name: %{"en" => "C1"}, color: "#000000", parent_id: "p1"},
           scope: admin_scope()
         )
 
       {:ok, _} =
         Alexandria.Core.create_child_category(
-          %{id: "c2", name: %{"en" => "C2"}, color: "#000000", parent_id: "p2"},
+          %{slug: "c2", name: %{"en" => "C2"}, color: "#000000", parent_id: "p2"},
           scope: admin_scope()
         )
 
-      ids =
+      slugs =
         Alexandria.Core.list_child_categories!("p1", scope: admin_scope())
-        |> Enum.map(& &1.id)
+        |> Enum.map(& &1.slug)
 
-      assert ids == ["c1"]
+      assert slugs == ["c1"]
     end
   end
 
@@ -113,11 +113,11 @@ defmodule Alexandria.Core.CategoryTest do
     end
   end
 
-  defp create_root(id, opts \\ []) do
+  defp create_root(slug, opts \\ []) do
     Alexandria.Core.create_root_category(
       %{
-        id: id,
-        name: %{"en" => id},
+        slug: slug,
+        name: %{"en" => slug},
         color: "#000000",
         sort: Keyword.get(opts, :sort)
       },

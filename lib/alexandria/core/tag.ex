@@ -16,7 +16,7 @@ defmodule Alexandria.Core.Tag do
     defaults [:read]
 
     create :create do
-      accept [:id, :name, :description, :metainfo]
+      accept [:slug, :name, :description, :metainfo]
     end
 
     update :rename do
@@ -45,11 +45,10 @@ defmodule Alexandria.Core.Tag do
   end
 
   attributes do
-    attribute :id, :string do
+    attribute :slug, :string do
       primary_key? true
       allow_nil? false
       public? true
-      source :slug
     end
 
     attribute :name, Alexandria.Types.Multilingual, allow_nil?: false, public?: true

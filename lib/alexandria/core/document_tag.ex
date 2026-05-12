@@ -31,6 +31,7 @@ defmodule Alexandria.Core.DocumentTag do
 
     belongs_to :tag, Alexandria.Core.Tag,
       attribute_type: :string,
+      destination_attribute: :slug,
       allow_nil?: false,
       public?: true
   end
