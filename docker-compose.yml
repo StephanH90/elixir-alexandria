@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - alexandria_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  garage:
+    build:
+      context: .
+      dockerfile: Dockerfile.garage
+    ports:
+      - "3900:3900"
+      - "3902:3902"
+    environment:
+      GARAGE_ACCESS_KEY_ID: GKb1bdfd0150811a1fd445acd2
+      GARAGE_SECRET_KEY: b018f21807eafdb78491c50fe63d8a05d768d078b6229636b43988159abd301b
+      GARAGE_KEY_NAME: alexandria
+    volumes:
+      - alexandria_garage_data:/var/lib/garage/data
+      - alexandria_garage_meta:/var/lib/garage/meta
+    healthcheck:
+      test: ["CMD-SHELL", "/garage -c /etc/garage.toml status >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  alexandria_pg_data:
+  alexandria_garage_data:
+  alexandria_garage_meta:

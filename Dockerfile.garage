@@ -1,0 +1,12 @@
+FROM dxflrs/garage:v1.0.1 AS base
+
+# The base image is scratch, so we need to copy the garage binary into
+# an alpine image so we can run a shell entrypoint that bootstraps the
+# server (creating buckets, keys, etc).
+FROM alpine:3
+
+COPY --from=base /garage /garage
+COPY garage.toml /etc/garage.toml
+COPY garage-entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
