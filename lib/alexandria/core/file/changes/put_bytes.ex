@@ -7,15 +7,16 @@ defmodule Alexandria.Core.File.Changes.PutBytes do
     bytes = Ash.Changeset.get_argument(changeset, :bytes)
     key = Ecto.UUID.generate()
 
-    case Alexandria.Storage.put(key, bytes) do
-      :ok ->
-        Ash.Changeset.change_attribute(changeset, :content, key)
+    changeset
+    |> Ash.Changeset.change_attribute(:content, key)
+    |> Ash.Changeset.after_action(fn _changeset, file ->
+      case Alexandria.Storage.put(key, bytes) do
+        :ok ->
+          {:ok, file}
 
-      {:error, reason} ->
-        Ash.Changeset.add_error(changeset,
-          field: :bytes,
-          message: "storage put failed: #{inspect(reason)}"
-        )
-    end
+        {:error, reason} ->
+          {:error, "storage put failed: #{inspect(reason)}"}
+      end
+    end)
   end
 end

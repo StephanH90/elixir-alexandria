@@ -70,4 +70,28 @@ defmodule Alexandria.Core.FileTest do
     assert {:ok, url} = Alexandria.Core.file_download_url(f.id, scope: admin_scope())
     assert is_binary(url)
   end
+
+  test "upload_original rolls back the DB row when storage put fails", %{document: doc} do
+    # Configure storage to refuse puts for this test
+    prior = Application.get_env(:alexandria, :storage)
+    Application.put_env(:alexandria, :storage, adapter: Alexandria.Test.AlwaysFailStorage)
+    on_exit(fn -> Application.put_env(:alexandria, :storage, prior) end)
+
+    files_before = Alexandria.Core.list_files_for_document!(doc.id, scope: admin_scope())
+
+    assert {:error, _} =
+             Alexandria.Core.upload_original_file(
+               %{
+                 name: "x.pdf",
+                 mime_type: "application/pdf",
+                 size: 1,
+                 document_id: doc.id,
+                 bytes: "x"
+               },
+               scope: admin_scope()
+             )
+
+    files_after = Alexandria.Core.list_files_for_document!(doc.id, scope: admin_scope())
+    assert length(files_after) == length(files_before)
+  end
 end
