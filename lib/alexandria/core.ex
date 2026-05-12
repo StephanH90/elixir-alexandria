@@ -8,5 +8,8 @@ defmodule Alexandria.Core do
     resource Alexandria.Core.TagSynonymGroup
     resource Alexandria.Core.Tag
     resource Alexandria.Core.Mark
+    resource Alexandria.Core.Document
+    resource Alexandria.Core.DocumentTag
+    resource Alexandria.Core.DocumentMark
   end
 end
