@@ -101,4 +101,14 @@ defmodule Alexandria.Core.Category do
       source_attribute: :slug,
       destination_attribute: :parent_id
   end
+
+  calculations do
+    calculate :display_name,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :name}
+
+    calculate :display_description,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :description}
+  end
 end

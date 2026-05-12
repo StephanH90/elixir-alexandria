@@ -344,10 +344,18 @@ Single-route, query-params-only. Examples:
 - `myapp.com/building/3/documents?category=intern`
 - `myapp.com/building/3/documents?category=intern&document=uuid1,uuid2&sort=title_asc&page=2&q=foo`
 
-Conventions:
-- `category` — single slug
-- `document` — comma-separated UUID list (multi-select opens multiple detail panels / tabs)
-- `sort`, `page`, `q` — scalars
+Conventions (mirror upstream [`ember-alexandria`](https://github.com/projectcaluma/ember-alexandria)'s `addon/controllers/index.js` query keys: `category`, `tags`, `marks`, `search`, `document`, `activeGroup`, `sort`, `listView`):
+- `category` — single slug (same as ember)
+- `document` — comma-separated UUID list. Ember uses a single id here; we extend to multi-select (multiple detail panels / tabs) using the comma-list shape ember already uses for `tags` and `marks`.
+- `sort`, `search`, `tags`, `marks`, `activeGroup`, `listView` — pass-through scalars; the component reads/writes them verbatim so ember-alexandria-savvy URLs round-trip.
+
+### Localized rendering
+
+Multilingual JSONB attributes (`Category.name`, `Tag.name`, `Mark.name`, `TagSynonymGroup.name`, `Document.title`, plus the `description` siblings) are surfaced via Ash calculations named `display_<attr>` (e.g. `:display_name`, `:display_title`). The calculations are powered by `Alexandria.Calculations.LocalizedField`, which reads the locale from `context.source_context[:shared][:locale]` (set by the host scope's `Ash.Scope.ToOpts.get_context/1`) and falls back to `"en"` if no scope is supplied. Templates load the calculation via the standard `load:` option on the domain code interface and render `record.display_<attr>` directly — never call `Alexandria.Types.Multilingual.get/2` from a template.
+
+### Component naming vs. ember-alexandria
+
+The library's top-level LiveComponent is `AlexandriaWeb.Browser`. Ember-alexandria has no exact analog (its engine root is `index.hbs` rather than a named component), so we keep `Browser`. The single LiveComponent renders the three logical regions ember exposes as separate components — `CategoryNav`, `DocumentView`, `DocumentsSidePanel` — without splitting them into LiveComponents of their own (KISS; we can extract later if a consumer needs it). Visible labels mirror ember-alexandria's English translations where ember provides one: the upload submit button reads "Upload file" (matching `alexandria.upload-file`), the destroy button reads "Delete" (matching `alexandria.delete`), and the sidebar header reads "Categories" (matching `alexandria.category-nav.categories`).
 
 ### File upload
 

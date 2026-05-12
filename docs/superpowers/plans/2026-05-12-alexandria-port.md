@@ -2613,6 +2613,12 @@ git commit -m "feat: dev sub-app shell + seeded category list + PhoenixTest smok
 - Modify: `dev/test/alexandria_dev_web/browser_live_test.exs`
 - Modify: `dev/priv/repo/seeds.exs` (also seed documents)
 
+**Notes:**
+- The component is named `AlexandriaWeb.Browser` to match the existing module path. Upstream `ember-alexandria` has no exact equivalent (its engine root is `index.hbs`); the single LiveComponent here renders the three regions ember exposes as `CategoryNav` / `DocumentView` / `DocumentsSidePanel`.
+- URL query keys (`category`, `document`, `sort`, …) mirror ember-alexandria's `addon/controllers/index.js` declarations. `document` is comma-separated in our component to support multi-select tabs (ember tracks a single id).
+- Multilingual fields are rendered through Ash calculations (`display_name`, `display_title`, etc.) backed by `Alexandria.Calculations.LocalizedField`, which reads the locale from `context.source_context[:shared][:locale]`. Templates load the calc via the domain code interface's `load:` option and render the result directly — no `Alexandria.Types.Multilingual.get/2` calls in templates.
+- Visible labels mirror ember-alexandria English translations where ember provides one: upload submit button = "Upload file" (`alexandria.upload-file`), destroy button = "Delete" (`alexandria.delete`), sidebar header = "Categories" (`alexandria.category-nav.categories`). Save is unlabeled in ember (check icon); keeping `"Save"` here.
+
 - [ ] **Step 1: Extend seeds to also create demo documents**
 
 Modify `dev/priv/repo/seeds.exs` — append:

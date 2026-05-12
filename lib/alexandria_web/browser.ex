@@ -2,10 +2,12 @@ defmodule AlexandriaWeb.Browser do
   @moduledoc """
   Embeddable LiveComponent: category tree + document list + detail panel.
   Host LV passes `scope` + `params`; component owns URL mutations via push_patch.
+
+  Mirrors the upstream ember-alexandria addon (https://github.com/projectcaluma/ember-alexandria):
+  URL query keys `category` (single slug) and `document` (id list) match its
+  consumer surface; comma-separated multi-select on `document` is our addition.
   """
   use Phoenix.LiveComponent
-
-  alias Alexandria.Types.Multilingual
 
   @impl true
   def mount(socket) do
@@ -22,10 +24,11 @@ defmodule AlexandriaWeb.Browser do
     ~H"""
     <div class="uk-grid uk-grid-collapse" uk-grid>
       <aside class="uk-width-1-5">
+        <h3 class="uk-heading-bullet">Categories</h3>
         <ul class="uk-nav uk-nav-default">
           <li :for={c <- @categories} class={if @selected_category == c.slug, do: "uk-active"}>
             <.link patch={category_path(@params, c.slug)}>
-              {Multilingual.get(c.name, @locale)}
+              {c.display_name}
             </.link>
           </li>
         </ul>
@@ -53,13 +56,15 @@ defmodule AlexandriaWeb.Browser do
             />
             <label for={@uploads.file.ref} class="uk-form-label">File</label>
             <.live_file_input upload={@uploads.file} class="uk-margin-small-bottom" required />
-            <button type="submit" class="uk-button uk-button-primary uk-button-small">Upload</button>
+            <button type="submit" class="uk-button uk-button-primary uk-button-small">
+              Upload file
+            </button>
           </.form>
 
           <ul class="uk-list uk-list-divider">
             <li :for={d <- @documents}>
               <.link patch={document_path(@params, d.id)}>
-                {Multilingual.get(d.title, @locale)}
+                {d.display_title}
               </.link>
             </li>
           </ul>
@@ -71,7 +76,7 @@ defmodule AlexandriaWeb.Browser do
           :for={d <- @open_documents}
           class="uk-card uk-card-default uk-card-body uk-margin-small-bottom"
         >
-          <h4>{Multilingual.get(d.title, @locale)}</h4>
+          <h4>{d.display_title}</h4>
 
           <.form
             for={%{}}
@@ -83,7 +88,7 @@ defmodule AlexandriaWeb.Browser do
             <input
               name="rename[title]"
               type="text"
-              value={Multilingual.get(d.title, @locale)}
+              value={d.display_title}
               class="uk-input uk-margin-small-bottom"
             />
             <button type="submit" class="uk-button uk-button-primary uk-button-small">Save</button>
@@ -164,18 +169,30 @@ defmodule AlexandriaWeb.Browser do
     selected_category = params["category"]
     selected_documents = decode_ids(params["document"])
 
-    categories = Alexandria.Core.list_root_categories!(scope: scope)
+    categories = Alexandria.Core.list_root_categories!(scope: scope, load: [:display_name])
 
     documents =
       case selected_category do
-        nil -> []
-        slug -> Alexandria.Core.list_documents_by_category!(slug, scope: scope)
+        nil ->
+          []
+
+        slug ->
+          Alexandria.Core.list_documents_by_category!(slug,
+            scope: scope,
+            load: [:display_title]
+          )
       end
 
     open_documents =
       case selected_documents do
-        [] -> []
-        ids -> Alexandria.Core.list_documents_by_ids!(ids, scope: scope)
+        [] ->
+          []
+
+        ids ->
+          Alexandria.Core.list_documents_by_ids!(ids,
+            scope: scope,
+            load: [:display_title, :display_description]
+          )
       end
 
     assign(socket,

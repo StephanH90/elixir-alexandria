@@ -48,4 +48,14 @@ defmodule Alexandria.Core.Mark do
     create_timestamp :created_at
     update_timestamp :modified_at
   end
+
+  calculations do
+    calculate :display_name,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :name}
+
+    calculate :display_description,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :description}
+  end
 end

@@ -40,4 +40,10 @@ defmodule Alexandria.Core.TagSynonymGroup do
   relationships do
     has_many :tags, Alexandria.Core.Tag, destination_attribute: :tag_synonym_group_id
   end
+
+  calculations do
+    calculate :display_name,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :name}
+  end
 end

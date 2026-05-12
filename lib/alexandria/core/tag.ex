@@ -64,4 +64,14 @@ defmodule Alexandria.Core.Tag do
   relationships do
     belongs_to :tag_synonym_group, Alexandria.Core.TagSynonymGroup, public?: true
   end
+
+  calculations do
+    calculate :display_name,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :name}
+
+    calculate :display_description,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :description}
+  end
 end

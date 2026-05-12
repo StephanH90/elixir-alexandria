@@ -158,4 +158,14 @@ defmodule Alexandria.Core.Document do
 
     has_many :files, Alexandria.Core.File
   end
+
+  calculations do
+    calculate :display_title,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :title}
+
+    calculate :display_description,
+              :string,
+              {Alexandria.Calculations.LocalizedField, attribute: :description}
+  end
 end

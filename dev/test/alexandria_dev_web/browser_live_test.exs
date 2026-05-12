@@ -50,7 +50,7 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
     |> visit("/?category=#{cat.slug}")
     |> fill_in("Title", with: "Uploaded.txt")
     |> upload("File", fixture_path)
-    |> click_button("Upload")
+    |> click_button("Upload file")
     |> assert_has("a", text: "Uploaded.txt")
   end
 end
