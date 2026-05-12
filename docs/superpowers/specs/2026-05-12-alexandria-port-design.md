@@ -170,6 +170,10 @@ Tag: `:read`, `:create`, `:rename`, `:join_synonym_group`, `:leave_synonym_group
 TagSynonymGroup: `:read`, `:create`, `:rename`, `:destroy`.
 Mark: `:read`, `:create`, `:rename`, `:destroy`.
 
+### Domain code interface
+
+All callers go through `Alexandria.Core` domain functions (e.g. `Alexandria.Core.create_root_category/2`, `Alexandria.Core.list_documents_by_category/2`, `Alexandria.Core.rename_document/3`) rather than raw `Ash.create/2` etc. The `define` declarations live inside each `resource …` block in `lib/alexandria/core.ex`; naming convention is `<verb>_<resource_concept>` (`create_root_category`, `add_tag_to_document`, `file_download_url`). Bang and non-bang variants are generated automatically. The join tables (`DocumentTag`, `DocumentMark`) intentionally have no interfaces — callers use `Alexandria.Core.add_tag_to_document/3` etc. on Document instead.
+
 ### Upstream-clean rule
 
 No action references ebau / canton concepts. Anything keyed on instance/service/dossier belongs in a consumer-side fragment, not in the library. Example: `Document.for_instance` is **not** in the lib — `elixir-ebau` adds it via a fragment.

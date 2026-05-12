@@ -1,21 +1,18 @@
 defmodule Alexandria.Core.TagSynonymGroupTest do
   use Alexandria.DataCase, async: false
-  alias Alexandria.Core.TagSynonymGroup
 
   test "create + rename + destroy" do
     {:ok, g} =
-      Ash.create(TagSynonymGroup, %{name: %{"en" => "Synonyms"}},
-        action: :create,
+      Alexandria.Core.create_tag_synonym_group(%{name: %{"en" => "Synonyms"}},
         scope: admin_scope()
       )
 
     {:ok, g2} =
-      Ash.update(g, %{name: %{"en" => "Renamed"}},
-        action: :rename,
+      Alexandria.Core.rename_tag_synonym_group(g, %{name: %{"en" => "Renamed"}},
         scope: admin_scope()
       )
 
     assert g2.name == %{"en" => "Renamed"}
-    :ok = Ash.destroy!(g2, action: :destroy, scope: admin_scope())
+    :ok = Alexandria.Core.destroy_tag_synonym_group!(g2, scope: admin_scope())
   end
 end

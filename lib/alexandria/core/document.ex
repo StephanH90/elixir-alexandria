@@ -30,6 +30,11 @@ defmodule Alexandria.Core.Document do
       filter expr(exists(marks, id == ^arg(:mark_id)))
     end
 
+    read :list_by_ids do
+      argument :ids, {:array, :uuid}, allow_nil?: false
+      filter expr(id in ^arg(:ids))
+    end
+
     create :create do
       accept [:title, :description, :date, :metainfo]
       argument :category_id, :string, allow_nil?: false
@@ -48,8 +53,7 @@ defmodule Alexandria.Core.Document do
 
       change after_action(fn changeset, document, context ->
                {:ok, _file} =
-                 Ash.create(
-                   Alexandria.Core.File,
+                 Alexandria.Core.upload_original_file(
                    %{
                      name: Ash.Changeset.get_argument(changeset, :file_name),
                      mime_type: Ash.Changeset.get_argument(changeset, :mime_type),
@@ -57,7 +61,6 @@ defmodule Alexandria.Core.Document do
                      document_id: document.id,
                      bytes: Ash.Changeset.get_argument(changeset, :bytes)
                    },
-                   action: :upload_original,
                    actor: context.actor
                  )
 

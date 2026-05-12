@@ -91,6 +91,8 @@ alexandria/
 
 Each `lib/alexandria/core/*.ex` file is a single Ash resource — one responsibility, easy to hold in context. The browser LiveComponent uses private function components inline until any one of them earns its own file.
 
+The `Alexandria.Core` domain declares `define` code interfaces for every action that has a real caller (tests, LiveComponent, dev seeds, dev test, and `Document.upload`'s after-action). All call sites use those domain functions (`Alexandria.Core.create_root_category/2`, `Alexandria.Core.list_documents_by_category/2`, `Alexandria.Core.rename_document/3`, …) rather than raw `Ash.create/2`, `Ash.read/2`, etc. The join tables (`DocumentTag`, `DocumentMark`) have no interfaces — callers go through Document. Resource internals (changes, generic-action `run` callbacks) still use `Ash.Changeset`, `Ash.get`, etc.
+
 ---
 
 ## Task 1: Project Skeleton

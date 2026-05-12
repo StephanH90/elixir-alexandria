@@ -1,20 +1,18 @@
 defmodule AlexandriaDevWeb.BrowserLiveTest do
   use AlexandriaDevWeb.ConnCase, async: false
 
-  alias Alexandria.Core.{Category, Document}
-
   setup do
     scope = AlexandriaDev.demo_scope()
 
     {:ok, cat} =
-      Ash.create(Category, %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
-        action: :create_root,
+      Alexandria.Core.create_root_category(
+        %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
         scope: scope
       )
 
     {:ok, doc} =
-      Ash.create(Document, %{title: %{"en" => "Doc A"}, category_id: cat.id},
-        action: :create,
+      Alexandria.Core.create_document(
+        %{title: %{"en" => "Doc A"}, category_id: cat.id},
         scope: scope
       )
 

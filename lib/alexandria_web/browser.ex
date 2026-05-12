@@ -14,9 +14,6 @@ defmodule AlexandriaWeb.Browser do
   """
   use Phoenix.LiveComponent
 
-  require Ash.Query
-
-  alias Alexandria.Core.{Category, Document}
   alias Alexandria.Types.Multilingual
 
   @impl true
@@ -27,31 +24,18 @@ defmodule AlexandriaWeb.Browser do
     selected_category = params["category"]
     selected_documents = decode_ids(params["document"])
 
-    categories =
-      Category
-      |> Ash.Query.for_read(:list_roots, %{}, scope: scope)
-      |> Ash.read!()
+    categories = Alexandria.Core.list_root_categories!(scope: scope)
 
     documents =
       case selected_category do
-        nil ->
-          []
-
-        slug ->
-          Document
-          |> Ash.Query.for_read(:list_by_category, %{category_id: slug}, scope: scope)
-          |> Ash.read!()
+        nil -> []
+        slug -> Alexandria.Core.list_documents_by_category!(slug, scope: scope)
       end
 
     open_documents =
       case selected_documents do
-        [] ->
-          []
-
-        ids ->
-          Document
-          |> Ash.Query.filter(id in ^ids)
-          |> Ash.read!(scope: scope)
+        [] -> []
+        ids -> Alexandria.Core.list_documents_by_ids!(ids, scope: scope)
       end
 
     {:ok,

@@ -1,21 +1,16 @@
 defmodule Alexandria.Core.MarkTest do
   use Alexandria.DataCase, async: false
-  alias Alexandria.Core.Mark
 
   test "lifecycle: create, rename, destroy" do
     {:ok, m} =
-      Ash.create(Mark, %{id: "important", name: %{"en" => "Important"}},
-        action: :create,
+      Alexandria.Core.create_mark(%{id: "important", name: %{"en" => "Important"}},
         scope: admin_scope()
       )
 
     {:ok, m2} =
-      Ash.update(m, %{name: %{"en" => "Critical"}},
-        action: :rename,
-        scope: admin_scope()
-      )
+      Alexandria.Core.rename_mark(m, %{name: %{"en" => "Critical"}}, scope: admin_scope())
 
     assert m2.name == %{"en" => "Critical"}
-    :ok = Ash.destroy!(m2, action: :destroy, scope: admin_scope())
+    :ok = Alexandria.Core.destroy_mark!(m2, scope: admin_scope())
   end
 end

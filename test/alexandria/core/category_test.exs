@@ -1,15 +1,11 @@
 defmodule Alexandria.Core.CategoryTest do
   use Alexandria.DataCase, async: false
 
-  alias Alexandria.Core.Category
-
   describe "create_root" do
     test "creates a root category with required attributes" do
       {:ok, cat} =
-        Ash.create(
-          Category,
+        Alexandria.Core.create_root_category(
           %{id: "intern", name: %{"en" => "Internal"}, color: "#FFFFFF"},
-          action: :create_root,
           scope: admin_scope()
         )
 
@@ -22,10 +18,8 @@ defmodule Alexandria.Core.CategoryTest do
 
     test "rejects an invalid color" do
       assert {:error, _} =
-               Ash.create(
-                 Category,
+               Alexandria.Core.create_root_category(
                  %{id: "bad", name: %{"en" => "Bad"}, color: "not-a-color"},
-                 action: :create_root,
                  scope: admin_scope()
                )
     end
@@ -38,17 +32,13 @@ defmodule Alexandria.Core.CategoryTest do
       {:ok, _} = create_root("a-parent")
 
       {:ok, _} =
-        Ash.create(
-          Category,
+        Alexandria.Core.create_child_category(
           %{id: "child", name: %{"en" => "C"}, color: "#000000", parent_id: "a-parent"},
-          action: :create_child,
           scope: admin_scope()
         )
 
       ids =
-        Category
-        |> Ash.Query.for_read(:list_roots, %{}, scope: admin_scope())
-        |> Ash.read!()
+        Alexandria.Core.list_root_categories!(scope: admin_scope())
         |> Enum.map(& &1.id)
 
       assert ids == ["b", "a", "a-parent"]
@@ -61,25 +51,19 @@ defmodule Alexandria.Core.CategoryTest do
       {:ok, _} = create_root("p2")
 
       {:ok, _} =
-        Ash.create(
-          Category,
+        Alexandria.Core.create_child_category(
           %{id: "c1", name: %{"en" => "C1"}, color: "#000000", parent_id: "p1"},
-          action: :create_child,
           scope: admin_scope()
         )
 
       {:ok, _} =
-        Ash.create(
-          Category,
+        Alexandria.Core.create_child_category(
           %{id: "c2", name: %{"en" => "C2"}, color: "#000000", parent_id: "p2"},
-          action: :create_child,
           scope: admin_scope()
         )
 
       ids =
-        Category
-        |> Ash.Query.for_read(:list_children, %{parent_id: "p1"}, scope: admin_scope())
-        |> Ash.read!()
+        Alexandria.Core.list_child_categories!("p1", scope: admin_scope())
         |> Enum.map(& &1.id)
 
       assert ids == ["c1"]
@@ -91,8 +75,9 @@ defmodule Alexandria.Core.CategoryTest do
       {:ok, c} = create_root("a")
 
       {:ok, c2} =
-        Ash.update(c, %{name: %{"en" => "Renamed"}, description: %{"en" => "d"}},
-          action: :rename,
+        Alexandria.Core.rename_category(
+          c,
+          %{name: %{"en" => "Renamed"}, description: %{"en" => "d"}},
           scope: admin_scope()
         )
 
@@ -102,13 +87,13 @@ defmodule Alexandria.Core.CategoryTest do
 
     test "recolor updates only color" do
       {:ok, c} = create_root("a")
-      {:ok, c2} = Ash.update(c, %{color: "#AABBCC"}, action: :recolor, scope: admin_scope())
+      {:ok, c2} = Alexandria.Core.recolor_category(c, %{color: "#AABBCC"}, scope: admin_scope())
       assert c2.color == "#AABBCC"
     end
 
     test "reorder updates only sort" do
       {:ok, c} = create_root("a")
-      {:ok, c2} = Ash.update(c, %{sort: 42}, action: :reorder, scope: admin_scope())
+      {:ok, c2} = Alexandria.Core.reorder_category(c, %{sort: 42}, scope: admin_scope())
       assert c2.sort == 42
     end
 
@@ -116,28 +101,26 @@ defmodule Alexandria.Core.CategoryTest do
       {:ok, c} = create_root("a")
 
       {:ok, c2} =
-        Ash.update(c, %{metainfo: %{"k" => "v"}}, action: :set_metainfo, scope: admin_scope())
+        Alexandria.Core.set_category_metainfo(c, %{metainfo: %{"k" => "v"}}, scope: admin_scope())
 
       assert c2.metainfo == %{"k" => "v"}
     end
 
     test "destroy removes the category" do
       {:ok, c} = create_root("a")
-      :ok = Ash.destroy!(c, action: :destroy, scope: admin_scope())
-      assert {:error, _} = Ash.get(Category, "a", scope: admin_scope())
+      :ok = Alexandria.Core.destroy_category!(c, scope: admin_scope())
+      assert {:error, _} = Alexandria.Core.get_category("a", scope: admin_scope())
     end
   end
 
   defp create_root(id, opts \\ []) do
-    Ash.create(
-      Category,
+    Alexandria.Core.create_root_category(
       %{
         id: id,
         name: %{"en" => id},
         color: "#000000",
         sort: Keyword.get(opts, :sort)
       },
-      action: :create_root,
       scope: admin_scope()
     )
   end

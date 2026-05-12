@@ -1,13 +1,10 @@
 defmodule Alexandria.Core.DocumentTest do
   use Alexandria.DataCase, async: false
-  alias Alexandria.Core.{Category, Document, Tag, Mark}
 
   setup do
     {:ok, cat} =
-      Ash.create(
-        Category,
+      Alexandria.Core.create_root_category(
         %{id: "intern", name: %{"en" => "Intern"}, color: "#000000"},
-        action: :create_root,
         scope: admin_scope()
       )
 
@@ -17,15 +14,13 @@ defmodule Alexandria.Core.DocumentTest do
   describe "create" do
     test "creates a document tied to a category", %{category: cat} do
       {:ok, d} =
-        Ash.create(
-          Document,
+        Alexandria.Core.create_document(
           %{
             title: %{"en" => "Doc1"},
             description: %{"en" => "Desc"},
             date: ~D[2026-05-12],
             category_id: cat.id
           },
-          action: :create,
           scope: admin_scope()
         )
 
@@ -40,19 +35,15 @@ defmodule Alexandria.Core.DocumentTest do
       {:ok, _} = create_doc(cat.id, "B")
 
       {:ok, other} =
-        Ash.create(
-          Category,
+        Alexandria.Core.create_root_category(
           %{id: "other", name: %{"en" => "O"}, color: "#000000"},
-          action: :create_root,
           scope: admin_scope()
         )
 
       {:ok, _} = create_doc(other.id, "C")
 
       titles =
-        Document
-        |> Ash.Query.for_read(:list_by_category, %{category_id: cat.id}, scope: admin_scope())
-        |> Ash.read!()
+        Alexandria.Core.list_documents_by_category!(cat.id, scope: admin_scope())
         |> Enum.map(& &1.title["en"])
 
       assert Enum.sort(titles) == ["A", "B"]
@@ -60,16 +51,14 @@ defmodule Alexandria.Core.DocumentTest do
 
     test "by_tag filters by tag", %{category: cat} do
       {:ok, t} =
-        Ash.create(Tag, %{id: "x", name: %{"en" => "X"}}, action: :create, scope: admin_scope())
+        Alexandria.Core.create_tag(%{id: "x", name: %{"en" => "X"}}, scope: admin_scope())
 
       {:ok, d} = create_doc(cat.id, "A")
       {:ok, _} = create_doc(cat.id, "B")
-      {:ok, _} = Ash.update(d, %{tag_id: t.id}, action: :add_tag, scope: admin_scope())
+      {:ok, _} = Alexandria.Core.add_tag_to_document(d, %{tag_id: t.id}, scope: admin_scope())
 
       titles =
-        Document
-        |> Ash.Query.for_read(:by_tag, %{tag_id: t.id}, scope: admin_scope())
-        |> Ash.read!()
+        Alexandria.Core.list_documents_by_tag!(t.id, scope: admin_scope())
         |> Enum.map(& &1.title["en"])
 
       assert titles == ["A"]
@@ -81,16 +70,15 @@ defmodule Alexandria.Core.DocumentTest do
       {:ok, d} = create_doc(cat.id, "A")
 
       {:ok, d} =
-        Ash.update(d, %{title: %{"en" => "AA"}}, action: :rename, scope: admin_scope())
+        Alexandria.Core.rename_document(d, %{title: %{"en" => "AA"}}, scope: admin_scope())
 
       {:ok, d} =
-        Ash.update(d, %{description: %{"en" => "desc"}},
-          action: :edit_description,
+        Alexandria.Core.edit_document_description(d, %{description: %{"en" => "desc"}},
           scope: admin_scope()
         )
 
       {:ok, d} =
-        Ash.update(d, %{date: ~D[2026-01-01]}, action: :set_date, scope: admin_scope())
+        Alexandria.Core.set_document_date(d, %{date: ~D[2026-01-01]}, scope: admin_scope())
 
       assert d.title == %{"en" => "AA"}
       assert d.description == %{"en" => "desc"}
@@ -99,18 +87,15 @@ defmodule Alexandria.Core.DocumentTest do
 
     test "move_to_category", %{category: cat} do
       {:ok, other} =
-        Ash.create(
-          Category,
+        Alexandria.Core.create_root_category(
           %{id: "other", name: %{"en" => "O"}, color: "#000000"},
-          action: :create_root,
           scope: admin_scope()
         )
 
       {:ok, d} = create_doc(cat.id, "A")
 
       {:ok, d2} =
-        Ash.update(d, %{category_id: other.id},
-          action: :move_to_category,
+        Alexandria.Core.move_document_to_category(d, %{category_id: other.id},
           scope: admin_scope()
         )
 
@@ -119,46 +104,47 @@ defmodule Alexandria.Core.DocumentTest do
 
     test "add_tag / remove_tag", %{category: cat} do
       {:ok, t} =
-        Ash.create(Tag, %{id: "x", name: %{"en" => "X"}}, action: :create, scope: admin_scope())
+        Alexandria.Core.create_tag(%{id: "x", name: %{"en" => "X"}}, scope: admin_scope())
 
       {:ok, d} = create_doc(cat.id, "A")
-      {:ok, d} = Ash.update(d, %{tag_id: t.id}, action: :add_tag, scope: admin_scope())
+      {:ok, d} = Alexandria.Core.add_tag_to_document(d, %{tag_id: t.id}, scope: admin_scope())
       d = Ash.load!(d, [:tags], scope: admin_scope())
       assert [%{id: "x"}] = d.tags
 
-      {:ok, d} = Ash.update(d, %{tag_id: t.id}, action: :remove_tag, scope: admin_scope())
+      {:ok, d} =
+        Alexandria.Core.remove_tag_from_document(d, %{tag_id: t.id}, scope: admin_scope())
+
       d = Ash.load!(d, [:tags], scope: admin_scope())
       assert d.tags == []
     end
 
     test "add_mark / remove_mark", %{category: cat} do
       {:ok, m} =
-        Ash.create(Mark, %{id: "m", name: %{"en" => "M"}}, action: :create, scope: admin_scope())
+        Alexandria.Core.create_mark(%{id: "m", name: %{"en" => "M"}}, scope: admin_scope())
 
       {:ok, d} = create_doc(cat.id, "A")
-      {:ok, d} = Ash.update(d, %{mark_id: m.id}, action: :add_mark, scope: admin_scope())
+      {:ok, d} = Alexandria.Core.add_mark_to_document(d, %{mark_id: m.id}, scope: admin_scope())
       d = Ash.load!(d, [:marks], scope: admin_scope())
       assert [%{id: "m"}] = d.marks
     end
 
     test "archive sets metainfo.archived_at then restore clears it", %{category: cat} do
       {:ok, d} = create_doc(cat.id, "A")
-      {:ok, d} = Ash.update(d, %{}, action: :archive, scope: admin_scope())
+      {:ok, d} = Alexandria.Core.archive_document(d, scope: admin_scope())
       assert Map.has_key?(d.metainfo, "archived_at")
-      {:ok, d} = Ash.update(d, %{}, action: :restore, scope: admin_scope())
+      {:ok, d} = Alexandria.Core.restore_document(d, scope: admin_scope())
       refute Map.has_key?(d.metainfo, "archived_at")
     end
 
     test "destroy", %{category: cat} do
       {:ok, d} = create_doc(cat.id, "A")
-      :ok = Ash.destroy!(d, action: :destroy, scope: admin_scope())
-      assert {:error, _} = Ash.get(Document, d.id, scope: admin_scope())
+      :ok = Alexandria.Core.destroy_document!(d, scope: admin_scope())
+      assert {:error, _} = Alexandria.Core.get_document(d.id, scope: admin_scope())
     end
 
     test "upload creates document + initial file in one transaction", %{category: cat} do
       {:ok, d} =
-        Ash.create(
-          Document,
+        Alexandria.Core.upload_document(
           %{
             title: %{"en" => "Doc1"},
             category_id: cat.id,
@@ -167,7 +153,6 @@ defmodule Alexandria.Core.DocumentTest do
             size: 5,
             bytes: "hello"
           },
-          action: :upload,
           scope: admin_scope()
         )
 
@@ -178,10 +163,8 @@ defmodule Alexandria.Core.DocumentTest do
   end
 
   defp create_doc(category_id, title) do
-    Ash.create(
-      Document,
+    Alexandria.Core.create_document(
       %{title: %{"en" => title}, category_id: category_id},
-      action: :create,
       scope: admin_scope()
     )
   end
