@@ -4,5 +4,6 @@ defmodule Alexandria.Core do
     extensions: [Alexandria.FragmentExtension]
 
   resources do
+    resource Alexandria.Core.Category
   end
 end

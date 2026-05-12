@@ -24,6 +24,7 @@ defmodule Alexandria.MixProject do
   defp deps do
     [
       {:ash, "~> 3.23"},
+      {:simple_sat, "~> 0.1"},
       {:ash_postgres, "~> 2.0"},
       {:ash_phoenix, "~> 2.0"},
       {:ex_aws, "~> 2.5"},
