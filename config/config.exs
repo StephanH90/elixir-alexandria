@@ -2,9 +2,8 @@ import Config
 
 config :alexandria, ecto_repos: [Alexandria.Repo], ash_domains: [Alexandria.Core]
 
-config :alexandria, :storage, adapter: Alexandria.Storage.ExAws
-
-config :ex_aws, json_codec: Jason
+# Storage adapter is provided by the consumer (e.g. the dev sub-app or a host
+# application). The library ships only the behaviour + dispatcher.
 
 config :ash,
   allow_forbidden_field_for_relationships_by_default?: true,

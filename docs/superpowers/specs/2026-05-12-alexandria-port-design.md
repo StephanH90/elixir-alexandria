@@ -180,6 +180,13 @@ Every resource ships a fully permissive base policy (`authorize_if always()`). F
 
 ## 4. Storage behaviour
 
+The library ships **only** the `Alexandria.Storage` behaviour + a tiny
+dispatcher that reads the adapter from `Application.get_env`. Adapter
+implementations live in the **consumer** (the `dev/` sub-app, a host
+application such as elixir-ebau, or each project's `test/support` tree).
+Keeping the lib upstream-clean means no `ex_aws` / `hackney` / `sweet_xml`
+in `mix.exs` and no adapter modules under `lib/alexandria/storage/`.
+
 ```elixir
 defmodule Alexandria.Storage do
   @callback put(key :: String.t(), content, opts :: keyword) :: :ok | {:error, term}
@@ -196,15 +203,27 @@ defmodule Alexandria.Storage do
 end
 ```
 
-Adapters:
-- `Alexandria.Storage.ExAws` — default, wraps `ExAws.S3` + `ExAws.S3.Upload` + `ExAws.S3.presigned_url/4`.
-- `Alexandria.Storage.InMemory` — test-only, Agent-backed.
+Adapters (provided by consumers, NOT the lib):
+- `AlexandriaDev.Storage.ExAws` (under `dev/lib/`) — wraps `ExAws.S3`
+  + `ExAws.S3.Upload` + `ExAws.S3.presigned_url/4`. Used by the demo
+  LiveView and by Garage integration smoke tests.
+- `Alexandria.Test.InMemoryStorage` (under `test/support/`) — used by the
+  library's own contract test.
+- `AlexandriaDev.Test.InMemoryStorage` (under `dev/test/support/`) —
+  used by the dev sub-app's tests. Identical shape, namespaced per
+  project so neither has to pull in the other's compile path.
 
-Config (env vars match Django's `ALEXANDRIA_S3_*` names so canton secrets carry over unchanged):
+Each adapter must declare `@behaviour Alexandria.Storage`; the library
+verifies the contract via the shared assertions macro in
+`test/alexandria/storage_test.exs`.
+
+Config (env vars match Django's `ALEXANDRIA_S3_*` names so canton secrets
+carry over unchanged):
 
 ```elixir
+# dev sub-app — runtime / dev.exs
 config :alexandria, :storage,
-  adapter: Alexandria.Storage.ExAws,
+  adapter: AlexandriaDev.Storage.ExAws,
   bucket: System.fetch_env!("ALEXANDRIA_S3_BUCKET"),
   access_key_id: System.fetch_env!("ALEXANDRIA_S3_ACCESS_KEY_ID"),
   secret_access_key: System.fetch_env!("ALEXANDRIA_S3_SECRET_ACCESS_KEY"),

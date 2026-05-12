@@ -10,4 +10,4 @@ config :alexandria, Alexandria.Repo,
 
 config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true
 
-config :alexandria, :storage, adapter: Alexandria.Storage.InMemory
+config :alexandria, :storage, adapter: Alexandria.Test.InMemoryStorage

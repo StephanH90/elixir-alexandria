@@ -36,12 +36,7 @@ end
 defmodule Alexandria.StorageTest do
   use ExUnit.Case, async: false
 
-  describe "InMemory adapter" do
-    use Alexandria.StorageTest.SharedAssertions, adapter: Alexandria.Storage.InMemory
-  end
-
-  describe "ExAws adapter (Garage)" do
-    @moduletag :garage
-    use Alexandria.StorageTest.SharedAssertions, adapter: Alexandria.Storage.ExAws
+  describe "InMemory adapter (test support)" do
+    use Alexandria.StorageTest.SharedAssertions, adapter: Alexandria.Test.InMemoryStorage
   end
 end

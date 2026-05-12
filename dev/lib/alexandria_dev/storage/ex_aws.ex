@@ -1,5 +1,12 @@
-defmodule Alexandria.Storage.ExAws do
-  @moduledoc false
+defmodule AlexandriaDev.Storage.ExAws do
+  @moduledoc """
+  ExAws/S3 implementation of `Alexandria.Storage`.
+
+  Lives in the dev sub-app so the library itself does not depend on
+  `:ex_aws`. Consumers that want S3 storage either pull in this module
+  (via `{:alexandria_dev, ...}`) or roll their own adapter.
+  """
+
   @behaviour Alexandria.Storage
 
   @impl true

@@ -4,7 +4,7 @@ config :alexandria, Alexandria.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
-config :alexandria, :storage, adapter: Alexandria.Storage.InMemory
+config :alexandria, :storage, adapter: AlexandriaDev.Test.InMemoryStorage
 
 config :alexandria_dev, AlexandriaDevWeb.Endpoint, server: false
 

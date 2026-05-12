@@ -1,2 +1,2 @@
-ExUnit.start(exclude: [:garage])
+ExUnit.start()
 Ecto.Adapters.SQL.Sandbox.mode(Alexandria.Repo, :manual)

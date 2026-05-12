@@ -27,6 +27,10 @@ defmodule AlexandriaDev.MixProject do
     [
       {:alexandria, path: ".."},
       {:bandit, "~> 1.5"},
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
+      {:hackney, "~> 1.20"},
+      {:sweet_xml, "~> 0.7"},
       {:phoenix_live_reload, "~> 1.4", only: :dev},
       {:phoenix_test, "~> 0.8", only: :test, runtime: false}
     ]

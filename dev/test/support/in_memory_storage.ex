@@ -1,4 +1,10 @@
-defmodule Alexandria.Storage.InMemory do
+defmodule AlexandriaDev.Test.InMemoryStorage do
+  @moduledoc """
+  Test-only in-memory implementation of `Alexandria.Storage` for the dev
+  sub-app. Compiled only under `test/support`, so it never ships with the
+  dev binary.
+  """
+
   @behaviour Alexandria.Storage
 
   use Agent

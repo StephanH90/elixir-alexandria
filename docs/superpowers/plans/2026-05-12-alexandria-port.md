@@ -1622,13 +1622,17 @@ git commit -m "feat: document resource + tag/mark joins + semantic actions"
 
 ---
 
-## Task 5: Storage Behaviour + InMemory Adapter
+## Task 5: Storage Behaviour + Test-Only InMemory Adapter
+
+The library ships **only** the behaviour + dispatcher. Adapter
+implementations belong to consumers — see Task 6 (ExAws moves to
+`dev/`) and Task 7 (dev's own InMemory test support).
 
 **Files:**
 - Create: `lib/alexandria/storage.ex`
-- Create: `lib/alexandria/storage/in_memory.ex`
+- Create: `test/support/in_memory_storage.ex` (test-only InMemory adapter
+  under module `Alexandria.Test.InMemoryStorage`)
 - Create: `test/alexandria/storage_test.exs`
-- Modify: `lib/alexandria/application.ex` (start InMemory Agent in test env)
 
 - [ ] **Step 1: Write failing behaviour-contract test**
 
@@ -1672,11 +1676,16 @@ defmodule Alexandria.StorageTest do
     end
   end
 
-  describe "InMemory adapter" do
-    use SharedAssertions, adapter: Alexandria.Storage.InMemory
+  describe "InMemory adapter (test support)" do
+    use SharedAssertions, adapter: Alexandria.Test.InMemoryStorage
   end
 end
 ```
+
+(No `:garage`/ExAws describe block in the lib's storage test — the lib
+doesn't ship an ExAws adapter, so its contract test exercises only the
+test-support InMemory adapter. Real S3/Garage coverage lives with the
+consumer that owns the ExAws adapter.)
 
 - [ ] **Step 2: Run — verify fail (module missing)**
 
@@ -1709,12 +1718,13 @@ defmodule Alexandria.Storage do
 end
 ```
 
-- [ ] **Step 4: Implement `Alexandria.Storage.InMemory`**
+- [ ] **Step 4: Implement `Alexandria.Test.InMemoryStorage`**
 
-Create `lib/alexandria/storage/in_memory.ex`:
+Create `test/support/in_memory_storage.ex` (compiled only under
+`elixirc_paths(:test)`, so it never ships in the library jar):
 
 ```elixir
-defmodule Alexandria.Storage.InMemory do
+defmodule Alexandria.Test.InMemoryStorage do
   @behaviour Alexandria.Storage
 
   use Agent
@@ -1756,33 +1766,11 @@ defmodule Alexandria.Storage.InMemory do
 end
 ```
 
-- [ ] **Step 5: Start InMemory Agent in the supervision tree**
+The adapter lazily starts its own Agent on first call, so the library's
+supervision tree stays a plain `[Alexandria.Repo]` and `application.ex`
+does not need to know about adapter modules.
 
-Modify `lib/alexandria/application.ex`:
-
-```elixir
-defmodule Alexandria.Application do
-  @moduledoc false
-  use Application
-
-  @impl true
-  def start(_type, _args) do
-    children =
-      [Alexandria.Repo] ++ storage_children()
-
-    Supervisor.start_link(children, strategy: :one_for_one, name: Alexandria.Supervisor)
-  end
-
-  defp storage_children do
-    case Application.get_env(:alexandria, :storage)[:adapter] do
-      Alexandria.Storage.InMemory -> [Alexandria.Storage.InMemory]
-      _ -> []
-    end
-  end
-end
-```
-
-- [ ] **Step 6: Run the storage tests — verify green**
+- [ ] **Step 5: Run the storage tests — verify green**
 
 ```bash
 mix test test/alexandria/storage_test.exs
@@ -1799,17 +1787,25 @@ git commit -m "feat: storage behaviour + in-memory adapter + contract test"
 
 ---
 
-## Task 6: File Resource + ExAws Adapter
+## Task 6: File Resource (ExAws adapter lives in the dev sub-app)
+
+The `Alexandria.Core.File` resource calls `Alexandria.Storage.*` — but
+the lib does **not** ship a real S3 adapter. Tests for the resource use
+the test-support InMemory adapter from Task 5; the production-shape
+`ExAws` adapter lives in the dev sub-app (`AlexandriaDev.Storage.ExAws`)
+and is set up alongside the dev demo (Task 7).
 
 **Files:**
 - Create: `lib/alexandria/core/file.ex`
-- Create: `lib/alexandria/storage/ex_aws.ex`
 - Create: `test/alexandria/core/file_test.exs`
-- Modify: `test/alexandria/storage_test.exs` (add ExAws describe block, `:garage`-tagged)
 - Modify: `lib/alexandria/core/document.ex` (add `:upload` action)
 - Modify: `test/alexandria/core/document_test.exs` (add upload tests)
 - Modify: `lib/alexandria/core.ex` (register File)
 - Create: `priv/repo/migrations/<timestamp>_add_file.exs`
+
+(The ExAws adapter module + Garage integration live in the dev sub-app —
+see Task 7. The library's `mix.exs` does NOT depend on `:ex_aws`,
+`:ex_aws_s3`, `:hackney`, or `:sweet_xml`; those move to `dev/mix.exs`.)
 
 - [ ] **Step 1: Write failing test for `File.upload_original`**
 
@@ -2078,126 +2074,25 @@ mix test test/alexandria/core/file_test.exs
 
 Expected: 3 passing.
 
-- [ ] **Step 8: Implement `Alexandria.Storage.ExAws`**
+- [ ] **Step 8: ExAws adapter lives in the dev sub-app (Task 7)**
 
-Create `lib/alexandria/storage/ex_aws.ex`:
-
-```elixir
-defmodule Alexandria.Storage.ExAws do
-  @behaviour Alexandria.Storage
-
-  @impl true
-  def put(key, content, _opts) when is_binary(content) do
-    bucket = config!(:bucket)
-
-    bucket
-    |> ExAws.S3.put_object(key, content)
-    |> ExAws.request()
-    |> case do
-      {:ok, _} -> :ok
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  def put(key, {:file, path}, _opts) do
-    bucket = config!(:bucket)
-
-    path
-    |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(bucket, key)
-    |> ExAws.request()
-    |> case do
-      {:ok, _} -> :ok
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  @impl true
-  def delete(key) do
-    bucket = config!(:bucket)
-
-    bucket
-    |> ExAws.S3.delete_object(key)
-    |> ExAws.request()
-    |> case do
-      {:ok, _} -> :ok
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  @impl true
-  def presigned_url(key, opts \\ []) do
-    bucket = config!(:bucket)
-    method = Keyword.get(opts, :method, :get)
-    ttl = Keyword.get(opts, :ttl, config(:presigned_url_ttl_seconds, 3600))
-
-    ExAws.Config.new(:s3, ex_aws_config_overrides())
-    |> ExAws.S3.presigned_url(method, bucket, key, expires_in: ttl)
-  end
-
-  @impl true
-  def exists?(key) do
-    bucket = config!(:bucket)
-
-    bucket
-    |> ExAws.S3.head_object(key)
-    |> ExAws.request()
-    |> case do
-      {:ok, _} -> true
-      _ -> false
-    end
-  end
-
-  defp ex_aws_config_overrides do
-    [
-      access_key_id: config!(:access_key_id),
-      secret_access_key: config!(:secret_access_key),
-      region: config(:region, "garage"),
-      scheme: "http://",
-      host: host_from(config!(:endpoint_url)),
-      port: port_from(config!(:endpoint_url))
-    ]
-  end
-
-  defp host_from(url), do: URI.parse(url).host
-  defp port_from(url), do: URI.parse(url).port
-
-  defp config!(key) do
-    config(key) || raise "missing :alexandria :storage config: #{key}"
-  end
-
-  defp config(key, default \\ nil) do
-    Application.get_env(:alexandria, :storage)[key] || default
-  end
-end
-```
-
-- [ ] **Step 9: Add ExAws describe block to storage test**
-
-Modify `test/alexandria/storage_test.exs` — append:
+The lib's storage_test only exercises the test-support InMemory adapter.
+The real ExAws adapter and its Garage integration are scaffolded inside
+the dev sub-app (`dev/lib/alexandria_dev/storage/ex_aws.ex`,
+module `AlexandriaDev.Storage.ExAws`) and configured via `dev/config/dev.exs`:
 
 ```elixir
-  describe "ExAws adapter (Garage)" do
-    @moduletag :garage
-    use SharedAssertions, adapter: Alexandria.Storage.ExAws
-  end
+config :alexandria, :storage,
+  adapter: AlexandriaDev.Storage.ExAws,
+  bucket: System.get_env("ALEXANDRIA_S3_BUCKET", "alexandria-media"),
+  ...
 ```
 
-- [ ] **Step 10: Verify Garage tests with the live container**
+Garage-backed coverage of the storage contract is exercised in dev via
+the demo LiveView (PhoenixTest smoke); a dedicated `:garage`-tagged
+contract test in `dev/test/` is YAGNI for now.
 
-Ensure `docker compose ps` shows Garage healthy and that `dev/garage.toml` (or `~/Documents/camac/elixir/garage/garage.toml`) has a bucket named per `ALEXANDRIA_S3_BUCKET`. Then:
-
-```bash
-export ALEXANDRIA_S3_BUCKET=alexandria-test
-export ALEXANDRIA_S3_ACCESS_KEY_ID=...    # from garage.toml
-export ALEXANDRIA_S3_SECRET_ACCESS_KEY=...
-export ALEXANDRIA_S3_ENDPOINT_URL=http://localhost:3900
-mix test test/alexandria/storage_test.exs --only garage
-```
-
-Expected: 3 passing.
-
-- [ ] **Step 11: Wire `Document.upload` to also create the initial File**
+- [ ] **Step 9: Wire `Document.upload` to also create the initial File**
 
 Modify `lib/alexandria/core/document.ex` — append inside `actions do ... end` after `create :create`:
 
@@ -2230,7 +2125,7 @@ Modify `lib/alexandria/core/document.ex` — append inside `actions do ... end` 
     end
 ```
 
-- [ ] **Step 12: Add a Document.upload test**
+- [ ] **Step 10: Add a Document.upload test**
 
 Append to `test/alexandria/core/document_test.exs`:
 
@@ -2252,19 +2147,19 @@ Append to `test/alexandria/core/document_test.exs`:
   end
 ```
 
-- [ ] **Step 13: Run full suite — verify green**
+- [ ] **Step 11: Run full suite — verify green**
 
 ```bash
 mix test
 ```
 
-Expected: all tests passing (with Garage tests skipped if `--only garage` not set).
+Expected: all tests passing.
 
-- [ ] **Step 14: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
 git add -A
-git commit -m "feat: file resource, ExAws adapter, document.upload"
+git commit -m "feat: file resource, document.upload (ExAws adapter ships with dev sub-app)"
 ```
 
 ---
@@ -3219,7 +3114,7 @@ git tag -a v0.1.0 -m "alexandria v0.1.0 — initial Ash/Phoenix/LiveView port"
 | §3 Action surface — Document | Task 4 + Task 6 (upload) + Task 10 (archive/restore) |
 | §3 Action surface — File | Task 6 |
 | §3 Action surface — Tag/TSG/Mark | Task 3 |
-| §4 Storage behaviour | Task 5 (behaviour + InMemory) + Task 6 (ExAws) |
+| §4 Storage behaviour | Task 5 (behaviour + test-support InMemory in lib) + Task 7 (`AlexandriaDev.Storage.ExAws` adapter in dev sub-app) |
 | §5 Fragment extension | Task 1 (module + test) |
 | §6 Embedding contract | Task 8 (read paths) + Task 9 (mutations + upload) |
 | §7 Testing | Each task has tests; integration in dev/ tasks 7-10 |
