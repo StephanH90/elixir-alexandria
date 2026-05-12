@@ -4,8 +4,8 @@ defmodule Alexandria.StorageTest.SharedAssertions do
       @adapter unquote(adapter)
 
       setup do
-        prior = Application.get_env(:alexandria, :storage)
-        Application.put_env(:alexandria, :storage, adapter: @adapter)
+        prior = Application.get_env(:alexandria, :storage, [])
+        Application.put_env(:alexandria, :storage, Keyword.put(prior, :adapter, @adapter))
         on_exit(fn -> Application.put_env(:alexandria, :storage, prior) end)
         :ok
       end
@@ -38,5 +38,10 @@ defmodule Alexandria.StorageTest do
 
   describe "InMemory adapter" do
     use Alexandria.StorageTest.SharedAssertions, adapter: Alexandria.Storage.InMemory
+  end
+
+  describe "ExAws adapter (Garage)" do
+    @moduletag :garage
+    use Alexandria.StorageTest.SharedAssertions, adapter: Alexandria.Storage.ExAws
   end
 end

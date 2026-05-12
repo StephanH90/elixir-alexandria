@@ -154,6 +154,27 @@ defmodule Alexandria.Core.DocumentTest do
       :ok = Ash.destroy!(d, action: :destroy, scope: admin_scope())
       assert {:error, _} = Ash.get(Document, d.id, scope: admin_scope())
     end
+
+    test "upload creates document + initial file in one transaction", %{category: cat} do
+      {:ok, d} =
+        Ash.create(
+          Document,
+          %{
+            title: %{"en" => "Doc1"},
+            category_id: cat.id,
+            file_name: "a.pdf",
+            mime_type: "application/pdf",
+            size: 5,
+            bytes: "hello"
+          },
+          action: :upload,
+          scope: admin_scope()
+        )
+
+      d = Ash.load!(d, [:files], scope: admin_scope())
+      assert [%{name: "a.pdf", variant: :original} = f] = d.files
+      assert Alexandria.Storage.exists?(f.content)
+    end
   end
 
   defp create_doc(category_id, title) do

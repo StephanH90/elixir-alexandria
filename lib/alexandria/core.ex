@@ -11,5 +11,6 @@ defmodule Alexandria.Core do
     resource Alexandria.Core.Document
     resource Alexandria.Core.DocumentTag
     resource Alexandria.Core.DocumentMark
+    resource Alexandria.Core.File
   end
 end

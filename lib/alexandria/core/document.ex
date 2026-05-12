@@ -36,6 +36,35 @@ defmodule Alexandria.Core.Document do
       change manage_relationship(:category_id, :category, type: :append)
     end
 
+    create :upload do
+      accept [:title, :description, :date, :metainfo]
+      argument :category_id, :string, allow_nil?: false
+      argument :file_name, :string, allow_nil?: false
+      argument :mime_type, :string, allow_nil?: false
+      argument :size, :integer, allow_nil?: false
+      argument :bytes, :string, allow_nil?: false
+
+      change manage_relationship(:category_id, :category, type: :append)
+
+      change after_action(fn changeset, document, context ->
+               {:ok, _file} =
+                 Ash.create(
+                   Alexandria.Core.File,
+                   %{
+                     name: Ash.Changeset.get_argument(changeset, :file_name),
+                     mime_type: Ash.Changeset.get_argument(changeset, :mime_type),
+                     size: Ash.Changeset.get_argument(changeset, :size),
+                     document_id: document.id,
+                     bytes: Ash.Changeset.get_argument(changeset, :bytes)
+                   },
+                   action: :upload_original,
+                   actor: context.actor
+                 )
+
+               {:ok, document}
+             end)
+    end
+
     update :rename do
       accept [:title]
     end
@@ -135,5 +164,7 @@ defmodule Alexandria.Core.Document do
       through: Alexandria.Core.DocumentMark,
       source_attribute_on_join_resource: :document_id,
       destination_attribute_on_join_resource: :mark_id
+
+    has_many :files, Alexandria.Core.File
   end
 end
