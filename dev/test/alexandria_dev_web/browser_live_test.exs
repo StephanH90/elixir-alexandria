@@ -33,4 +33,24 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
     |> click_link("Doc A")
     |> assert_has("article h4", text: "Doc A")
   end
+
+  test "deleting a document removes it from the list", %{conn: conn} do
+    conn
+    |> visit("/")
+    |> click_link("Intern")
+    |> click_link("Doc A")
+    |> click_button("Delete")
+    |> refute_has("a", text: "Doc A")
+  end
+
+  test "uploading a document adds it to the list", %{conn: conn, category: cat} do
+    fixture_path = Path.join(__DIR__, "../fixtures/sample.txt")
+
+    conn
+    |> visit("/?category=#{cat.slug}")
+    |> fill_in("Title", with: "Uploaded.txt")
+    |> upload("File", fixture_path)
+    |> click_button("Upload")
+    |> assert_has("a", text: "Uploaded.txt")
+  end
 end
