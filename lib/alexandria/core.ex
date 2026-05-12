@@ -5,5 +5,8 @@ defmodule Alexandria.Core do
 
   resources do
     resource Alexandria.Core.Category
+    resource Alexandria.Core.TagSynonymGroup
+    resource Alexandria.Core.Tag
+    resource Alexandria.Core.Mark
   end
 end
