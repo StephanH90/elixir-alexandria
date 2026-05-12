@@ -20,6 +20,17 @@ defmodule Alexandria.Core.Document do
       filter expr(category_id == ^arg(:category_id))
     end
 
+    read :list_active_by_category do
+      argument :category_id, :string, allow_nil?: false
+
+      filter expr(
+               category_id == ^arg(:category_id) and
+                 is_nil(fragment("?->>'archived_at'", metainfo))
+             )
+
+      prepare build(sort: [modified_at: :desc])
+    end
+
     read :by_tag do
       argument :tag_id, :string, allow_nil?: false
       filter expr(exists(tags, slug == ^arg(:tag_id)))

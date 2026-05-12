@@ -95,6 +95,15 @@ defmodule AlexandriaWeb.Browser do
           </.form>
 
           <button
+            class="uk-button uk-button-default uk-button-small uk-margin-small-top"
+            phx-click="archive"
+            phx-target={@myself}
+            phx-value-id={d.id}
+          >
+            Archive
+          </button>
+
+          <button
             class="uk-button uk-button-danger uk-button-small uk-margin-small-top"
             phx-click="delete"
             phx-target={@myself}
@@ -128,6 +137,17 @@ defmodule AlexandriaWeb.Browser do
     scope = socket.assigns.scope
     {:ok, doc} = Alexandria.Core.get_document(id, scope: scope)
     :ok = Alexandria.Core.destroy_document!(doc, scope: scope)
+
+    remaining = Enum.reject(socket.assigns.selected_documents, &(&1 == id))
+    new_params = update_document_param(socket.assigns.params, remaining)
+
+    {:noreply, push_patch(socket, to: "/?" <> URI.encode_query(new_params))}
+  end
+
+  def handle_event("archive", %{"id" => id}, socket) do
+    scope = socket.assigns.scope
+    {:ok, doc} = Alexandria.Core.get_document(id, scope: scope)
+    {:ok, _} = Alexandria.Core.archive_document(doc, scope: scope)
 
     remaining = Enum.reject(socket.assigns.selected_documents, &(&1 == id))
     new_params = update_document_param(socket.assigns.params, remaining)
@@ -177,7 +197,7 @@ defmodule AlexandriaWeb.Browser do
           []
 
         slug ->
-          Alexandria.Core.list_documents_by_category!(slug,
+          Alexandria.Core.list_active_documents_by_category!(slug,
             scope: scope,
             load: [:display_title]
           )

@@ -3019,7 +3019,9 @@ git commit -m "feat: LiveComponent mutations + inline upload"
 ## Task 10: Archive / Restore Lifecycle + Final Integration Test
 
 **Files:**
-- Modify: `lib/alexandria_web/browser.ex` (archive / restore buttons + hide archived from main list)
+- Modify: `lib/alexandria/core/document.ex` (add `:list_active_by_category` read action)
+- Modify: `lib/alexandria/core.ex` (add `:list_active_documents_by_category` code interface)
+- Modify: `lib/alexandria_web/browser.ex` (Archive button on detail card + hide archived from main list via `:list_active_by_category`; restore stays library-only for v2)
 - Modify: `dev/test/alexandria_dev_web/browser_live_test.exs`
 
 - [ ] **Step 1: Add a `list_active` read action to Document**

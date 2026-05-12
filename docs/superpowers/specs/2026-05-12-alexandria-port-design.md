@@ -160,7 +160,7 @@ No generic `:update` actions. Each domain operation gets its own action with a s
 
 ### Document
 
-`:read`, `:list_by_category`, `:by_tag`, `:by_mark`, `:upload` (creates document + initial File + storage put in one transaction), `:rename`, `:edit_description`, `:set_date`, `:move_to_category`, `:set_metainfo`, `:add_tag`, `:remove_tag`, `:add_mark`, `:remove_mark`, `:replace_original_file`, `:archive` / `:restore` (toggle `metainfo.archived_at`), `:destroy`.
+`:read`, `:list_by_category`, `:list_active_by_category` (excludes docs with `metainfo.archived_at`; used by the LiveComponent's main list), `:by_tag`, `:by_mark`, `:upload` (creates document + initial File + storage put in one transaction), `:rename`, `:edit_description`, `:set_date`, `:move_to_category`, `:set_metainfo`, `:add_tag`, `:remove_tag`, `:add_mark`, `:remove_mark`, `:replace_original_file`, `:archive` / `:restore` (toggle `metainfo.archived_at`; archive is exposed as a button on the detail card, restore is v2), `:destroy`.
 
 ### File
 

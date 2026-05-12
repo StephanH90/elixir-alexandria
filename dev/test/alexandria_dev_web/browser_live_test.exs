@@ -53,4 +53,13 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
     |> click_button("Upload file")
     |> assert_has("a", text: "Uploaded.txt")
   end
+
+  test "archiving a document removes it from the active list", %{conn: conn} do
+    conn
+    |> visit("/")
+    |> click_link("Intern")
+    |> click_link("Doc A")
+    |> click_button("Archive")
+    |> refute_has("a", text: "Doc A")
+  end
 end
