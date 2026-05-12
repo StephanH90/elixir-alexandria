@@ -23,3 +23,18 @@ dump
 end)
 
 IO.puts("Seeded #{Category |> Ash.read!(scope: scope) |> length()} categories")
+
+alias Alexandria.Core.Document
+
+[first | _] = Category |> Ash.read!(scope: scope)
+
+for i <- 1..3 do
+  Ash.create!(
+    Document,
+    %{title: %{"en" => "Demo doc #{i}"}, date: ~D[2026-05-01], category_id: first.id},
+    action: :create,
+    scope: scope
+  )
+end
+
+IO.puts("Seeded 3 demo documents in #{first.id}")

@@ -39,7 +39,7 @@ defmodule AlexandriaDev.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ash.setup", "run priv/repo/seeds.exs"],
-      test: ["ash.setup --quiet", "test"]
+      test: ["ash.reset --quiet", "test"]
     ]
   end
 end
