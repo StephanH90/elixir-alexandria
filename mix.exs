@@ -37,7 +37,6 @@ defmodule Alexandria.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.4"},
       {:spark, "~> 2.2"},
-      {:sourceror, "~> 1.8", only: [:dev, :test]},
       {:phoenix_test, "~> 0.8", only: :test, runtime: false},
       {:usage_rules, "~> 1.0", only: :dev},
       {:igniter, "~> 0.6", only: [:dev, :test]}
@@ -50,7 +49,7 @@ defmodule Alexandria.MixProject do
       test: ["ash.setup --quiet", "test"],
       precommit: [
         "format",
-        "compile --warning-as-errors",
+        "compile --warnings-as-errors",
         "deps.unlock --unused",
         "ash.codegen --check"
       ]
