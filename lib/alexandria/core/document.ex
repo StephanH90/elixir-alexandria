@@ -50,22 +50,7 @@ defmodule Alexandria.Core.Document do
       argument :bytes, :string, allow_nil?: false
 
       change manage_relationship(:category_id, :category, type: :append)
-
-      change after_action(fn changeset, document, context ->
-               {:ok, _file} =
-                 Alexandria.Core.upload_original_file(
-                   %{
-                     name: Ash.Changeset.get_argument(changeset, :file_name),
-                     mime_type: Ash.Changeset.get_argument(changeset, :mime_type),
-                     size: Ash.Changeset.get_argument(changeset, :size),
-                     document_id: document.id,
-                     bytes: Ash.Changeset.get_argument(changeset, :bytes)
-                   },
-                   actor: context.actor
-                 )
-
-               {:ok, document}
-             end)
+      change Alexandria.Core.Document.Changes.CreateInitialFile
     end
 
     update :rename do
