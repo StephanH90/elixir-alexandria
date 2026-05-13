@@ -2,19 +2,14 @@ defmodule AlexandriaDevWeb.BrowserLive do
   use Phoenix.LiveView, layout: {AlexandriaDevWeb.Layouts, :root}
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, scope: AlexandriaDev.demo_scope(), params: %{})}
-  end
-
-  @impl true
-  def handle_params(params, _, socket), do: {:noreply, assign(socket, :params, params)}
+  def mount(_params, _session, socket), do: {:ok, socket}
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="uk-container uk-margin">
-      <h1 class="uk-heading-divider">Alexandria Dev</h1>
-      <.live_component module={AlexandriaWeb.Browser} id="b" scope={@scope} params={@params} />
+    <div style="padding: 2rem; font-family: system-ui;">
+      <h1>Alexandria dev shell</h1>
+      <p>Browser UI removed. Replace this page with a new component.</p>
     </div>
     """
   end
