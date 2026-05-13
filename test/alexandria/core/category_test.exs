@@ -70,6 +70,21 @@ defmodule Alexandria.Core.CategoryTest do
     end
   end
 
+  describe "create_child" do
+    test "rejects a child pointing at a non-existent parent" do
+      assert {:error, _} =
+               Alexandria.Core.create_child_category(
+                 %{
+                   slug: "orphan",
+                   name: %{"en" => "Orphan"},
+                   color: "#000000",
+                   parent_id: "does-not-exist"
+                 },
+                 scope: admin_scope()
+               )
+    end
+  end
+
   describe "mutations" do
     test "rename updates name + description" do
       {:ok, c} = create_root("a")
@@ -110,6 +125,19 @@ defmodule Alexandria.Core.CategoryTest do
       {:ok, c} = create_root("a")
       :ok = Alexandria.Core.destroy_category!(c, scope: admin_scope())
       assert {:error, _} = Alexandria.Core.get_category("a", scope: admin_scope())
+    end
+
+    test "destroy is restricted when the category has children" do
+      {:ok, parent} = create_root("p")
+
+      {:ok, _child} =
+        Alexandria.Core.create_child_category(
+          %{slug: "c", name: %{"en" => "C"}, color: "#000000", parent_id: parent.slug},
+          scope: admin_scope()
+        )
+
+      assert {:error, _} = Alexandria.Core.destroy_category(parent, scope: admin_scope())
+      assert {:ok, _} = Alexandria.Core.get_category(parent.slug, scope: admin_scope())
     end
   end
 

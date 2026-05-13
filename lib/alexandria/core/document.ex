@@ -23,10 +23,7 @@ defmodule Alexandria.Core.Document do
     read :list_active_by_category do
       argument :category_id, :string, allow_nil?: false
 
-      filter expr(
-               category_id == ^arg(:category_id) and
-                 is_nil(fragment("?->>'archived_at'", metainfo))
-             )
+      filter expr(category_id == ^arg(:category_id) and not archived?)
 
       prepare build(sort: [modified_at: :desc])
     end
@@ -39,6 +36,22 @@ defmodule Alexandria.Core.Document do
     read :by_mark do
       argument :mark_id, :string, allow_nil?: false
       filter expr(exists(marks, slug == ^arg(:mark_id)))
+    end
+
+    read :list_active_by_tag do
+      argument :tag_id, :string, allow_nil?: false
+
+      filter expr(exists(tags, slug == ^arg(:tag_id)) and not archived?)
+
+      prepare build(sort: [modified_at: :desc])
+    end
+
+    read :list_active_by_mark do
+      argument :mark_id, :string, allow_nil?: false
+
+      filter expr(exists(marks, slug == ^arg(:mark_id)) and not archived?)
+
+      prepare build(sort: [modified_at: :desc])
     end
 
     read :list_by_ids do
@@ -77,7 +90,6 @@ defmodule Alexandria.Core.Document do
     end
 
     update :move_to_category do
-      accept []
       argument :category_id, :string, allow_nil?: false
       require_atomic? false
       change manage_relationship(:category_id, :category, type: :append_and_remove)
@@ -88,41 +100,35 @@ defmodule Alexandria.Core.Document do
     end
 
     update :add_tag do
-      accept []
       argument :tag_id, :string, allow_nil?: false
       require_atomic? false
       change manage_relationship(:tag_id, :tags, type: :append, on_no_match: :error)
     end
 
     update :remove_tag do
-      accept []
       argument :tag_id, :string, allow_nil?: false
       require_atomic? false
       change manage_relationship(:tag_id, :tags, type: :remove)
     end
 
     update :add_mark do
-      accept []
       argument :mark_id, :string, allow_nil?: false
       require_atomic? false
       change manage_relationship(:mark_id, :marks, type: :append, on_no_match: :error)
     end
 
     update :remove_mark do
-      accept []
       argument :mark_id, :string, allow_nil?: false
       require_atomic? false
       change manage_relationship(:mark_id, :marks, type: :remove)
     end
 
     update :archive do
-      accept []
       require_atomic? false
       change {Alexandria.Core.Document.Changes.ToggleArchived, flag: :on}
     end
 
     update :restore do
-      accept []
       require_atomic? false
       change {Alexandria.Core.Document.Changes.ToggleArchived, flag: :off}
     end
@@ -178,5 +184,9 @@ defmodule Alexandria.Core.Document do
     calculate :display_description,
               :string,
               {Alexandria.Calculations.LocalizedField, attribute: :description}
+
+    calculate :archived?,
+              :boolean,
+              expr(not is_nil(fragment("?->>'archived_at'", metainfo)))
   end
 end

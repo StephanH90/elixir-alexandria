@@ -44,6 +44,7 @@ defmodule Alexandria.Core do
     end
 
     resource Alexandria.Core.Document do
+      define :list_documents, action: :read
       define :list_documents_by_category, action: :list_by_category, args: [:category_id]
 
       define :list_active_documents_by_category,
@@ -52,6 +53,8 @@ defmodule Alexandria.Core do
 
       define :list_documents_by_tag, action: :by_tag, args: [:tag_id]
       define :list_documents_by_mark, action: :by_mark, args: [:mark_id]
+      define :list_active_documents_by_tag, action: :list_active_by_tag, args: [:tag_id]
+      define :list_active_documents_by_mark, action: :list_active_by_mark, args: [:mark_id]
       define :list_documents_by_ids, action: :list_by_ids, args: [:ids]
       define :get_document, action: :read, get_by: [:id]
       define :create_document, action: :create

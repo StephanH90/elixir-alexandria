@@ -1,6 +1,20 @@
 defmodule Alexandria.Core.TagTest do
   use Alexandria.DataCase, async: false
 
+  test "join_synonym_group with non-existent group returns an error" do
+    {:ok, t} =
+      Alexandria.Core.create_tag(%{slug: "urgent", name: %{"en" => "Urgent"}},
+        scope: admin_scope()
+      )
+
+    assert {:error, _} =
+             Alexandria.Core.join_tag_synonym_group(
+               t,
+               %{group_id: Ecto.UUID.generate()},
+               scope: admin_scope()
+             )
+  end
+
   test "lifecycle: create, rename, join group, leave group, destroy" do
     {:ok, t} =
       Alexandria.Core.create_tag(%{slug: "urgent", name: %{"en" => "Urgent"}},

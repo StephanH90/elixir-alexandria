@@ -104,6 +104,7 @@ defmodule Alexandria.Core.File do
     attribute :content, :string, allow_nil?: false, public?: true
     attribute :mime_type, :string, allow_nil?: false, public?: true
     attribute :size, :integer, allow_nil?: false, public?: true
+    attribute :checksum, :string, allow_nil?: false, public?: true
     attribute :metainfo, :map, default: %{}, public?: true
     attribute :created_by_user, :string, public?: true
     attribute :created_by_group, :string, public?: true
@@ -114,5 +115,9 @@ defmodule Alexandria.Core.File do
   relationships do
     belongs_to :document, Alexandria.Core.Document, allow_nil?: false, public?: true
     belongs_to :original, __MODULE__, public?: true
+  end
+
+  calculations do
+    calculate :display_size, :string, Alexandria.Calculations.HumanSize
   end
 end

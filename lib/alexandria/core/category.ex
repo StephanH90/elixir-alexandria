@@ -100,6 +100,16 @@ defmodule Alexandria.Core.Category do
     has_many :children, __MODULE__,
       source_attribute: :slug,
       destination_attribute: :parent_id
+
+    has_many :documents, Alexandria.Core.Document,
+      source_attribute: :slug,
+      destination_attribute: :category_id
+  end
+
+  aggregates do
+    count :active_document_count, :documents do
+      filter expr(not archived?)
+    end
   end
 
   calculations do

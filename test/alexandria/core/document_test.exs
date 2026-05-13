@@ -63,6 +63,83 @@ defmodule Alexandria.Core.DocumentTest do
 
       assert titles == ["A"]
     end
+
+    test "by_mark filters by mark", %{category: cat} do
+      {:ok, m} =
+        Alexandria.Core.create_mark(%{slug: "y", name: %{"en" => "Y"}}, scope: admin_scope())
+
+      {:ok, d} = create_doc(cat.slug, "A")
+      {:ok, _} = create_doc(cat.slug, "B")
+      {:ok, _} = Alexandria.Core.add_mark_to_document(d, %{mark_id: m.slug}, scope: admin_scope())
+
+      titles =
+        Alexandria.Core.list_documents_by_mark!(m.slug, scope: admin_scope())
+        |> Enum.map(& &1.title["en"])
+
+      assert titles == ["A"]
+    end
+
+    test "list_active_by_category hides archived + sorts by modified_at desc", %{category: cat} do
+      {:ok, older} = create_doc(cat.slug, "Older")
+      {:ok, _archived} = create_doc(cat.slug, "Archived")
+      {:ok, newer} = create_doc(cat.slug, "Newer")
+
+      {:ok, _} =
+        Alexandria.Core.archive_document(
+          Alexandria.Core.get_document!(elem(create_doc(cat.slug, "ToArchive"), 1).id,
+            scope: admin_scope()
+          ),
+          scope: admin_scope()
+        )
+
+      # Touch `older` so `newer` is still the most recent
+      {:ok, _} =
+        Alexandria.Core.edit_document_description(older, %{description: %{"en" => "touch"}},
+          scope: admin_scope()
+        )
+
+      # Touch `newer` last so it should sort first
+      {:ok, _} =
+        Alexandria.Core.edit_document_description(newer, %{description: %{"en" => "touch"}},
+          scope: admin_scope()
+        )
+
+      titles =
+        Alexandria.Core.list_active_documents_by_category!(cat.slug, scope: admin_scope())
+        |> Enum.map(& &1.title["en"])
+
+      assert "ToArchive" not in titles
+      assert hd(titles) == "Newer"
+    end
+
+    test "list_by_ids returns docs matching the given ids", %{category: cat} do
+      {:ok, a} = create_doc(cat.slug, "A")
+      {:ok, b} = create_doc(cat.slug, "B")
+      {:ok, _c} = create_doc(cat.slug, "C")
+
+      titles =
+        Alexandria.Core.list_documents_by_ids!([a.id, b.id], scope: admin_scope())
+        |> Enum.map(& &1.title["en"])
+        |> Enum.sort()
+
+      assert titles == ["A", "B"]
+    end
+  end
+
+  describe "mutation errors" do
+    test "add_tag with non-existent tag returns an error", %{category: cat} do
+      {:ok, d} = create_doc(cat.slug, "A")
+
+      assert {:error, _} =
+               Alexandria.Core.add_tag_to_document(d, %{tag_id: "ghost"}, scope: admin_scope())
+    end
+
+    test "add_mark with non-existent mark returns an error", %{category: cat} do
+      {:ok, d} = create_doc(cat.slug, "A")
+
+      assert {:error, _} =
+               Alexandria.Core.add_mark_to_document(d, %{mark_id: "ghost"}, scope: admin_scope())
+    end
   end
 
   describe "mutations" do
@@ -159,6 +236,30 @@ defmodule Alexandria.Core.DocumentTest do
       d = Ash.load!(d, [:files], scope: admin_scope())
       assert [%{name: "a.pdf", variant: :original} = f] = d.files
       assert Alexandria.Storage.exists?(f.content)
+    end
+
+    test "upload rolls back both rows when storage put fails", %{category: cat} do
+      prior = Application.get_env(:alexandria, :storage)
+      Application.put_env(:alexandria, :storage, adapter: Alexandria.Test.AlwaysFailStorage)
+      on_exit(fn -> Application.put_env(:alexandria, :storage, prior) end)
+
+      docs_before = Alexandria.Core.list_documents_by_category!(cat.slug, scope: admin_scope())
+
+      assert {:error, _} =
+               Alexandria.Core.upload_document(
+                 %{
+                   title: %{"en" => "Rollback"},
+                   category_id: cat.slug,
+                   file_name: "a.pdf",
+                   mime_type: "application/pdf",
+                   size: 1,
+                   bytes: "x"
+                 },
+                 scope: admin_scope()
+               )
+
+      docs_after = Alexandria.Core.list_documents_by_category!(cat.slug, scope: admin_scope())
+      assert length(docs_after) == length(docs_before)
     end
   end
 
