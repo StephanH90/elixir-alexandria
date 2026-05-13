@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="csrf-token" content={Plug.CSRFProtection.get_csrf_token()} />
     <title>Alexandria Dev</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.21.5/dist/css/uikit.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/uikit@3.21.5/dist/js/uikit.min.js"></script>
+    <link rel="stylesheet" href="/assets/css/app.css" />
+    <script defer phx-track-static type="text/javascript" src="/assets/app.js">
+    </script>
   </head>
-  <body class="uk-light">
+  <body>
     {@inner_content}
   </body>
 </html>

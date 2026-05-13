@@ -1,0 +1,8 @@
+// UIkit (loaded via dart_sass --load-path)
+@import "variables-theme";
+@import "mixins-theme";
+@import "uikit-theme";
+
+html, body { height: 100%; margin: 0; }
+body > div[data-phx-main],
+body > div[data-phx-main] > div { height: 100%; }

@@ -25,4 +25,21 @@ config :alexandria_dev, AlexandriaDevWeb.Endpoint,
 
 config :phoenix, :json_library, Jason
 
+config :esbuild,
+  version: "0.21.5",
+  default: [
+    args:
+      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/* --alias:uikit=../deps/elixir_uikit/priv/vendor/uikit/js/uikit.min.js),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
+config :dart_sass,
+  version: "1.77.8",
+  default: [
+    args:
+      ~w(--load-path=../deps/elixir_uikit/priv/vendor/uikit/scss css/app.scss ../priv/static/assets/css/app.css),
+    cd: Path.expand("../assets", __DIR__)
+  ]
+
 import_config "#{config_env()}.exs"

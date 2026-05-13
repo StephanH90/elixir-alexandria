@@ -31,6 +31,8 @@ defmodule AlexandriaDev.MixProject do
       {:ex_aws_s3, "~> 2.5"},
       {:hackney, "~> 1.20"},
       {:sweet_xml, "~> 0.7"},
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev},
       {:phoenix_live_reload, "~> 1.4", only: :dev},
       {:phoenix_test, "~> 0.8", only: :test, runtime: false}
     ]
@@ -38,7 +40,14 @@ defmodule AlexandriaDev.MixProject do
 
   defp aliases do
     [
-      setup: ["deps.get", "ash.setup", "run priv/repo/seeds.exs"],
+      setup: [
+        "deps.get",
+        "esbuild.install --if-missing",
+        "sass.install --if-missing",
+        "ash.setup",
+        "run priv/repo/seeds.exs"
+      ],
+      "assets.build": ["esbuild default", "sass default"],
       test: ["ash.reset --quiet", "test"]
     ]
   end

@@ -16,6 +16,11 @@ defmodule AlexandriaDevWeb.Endpoint do
     plug Phoenix.CodeReloader
   end
 
+  plug Plug.Static,
+    at: "/assets",
+    from: {:alexandria_dev, "priv/static/assets"},
+    gzip: false
+
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
