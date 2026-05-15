@@ -121,4 +121,8 @@ defmodule Alexandria.Core.Category do
               :string,
               {Alexandria.Calculations.LocalizedField, attribute: :description}
   end
+
+  preparations do
+    prepare build(load: [:display_name, :display_description]) 
+  end
 end

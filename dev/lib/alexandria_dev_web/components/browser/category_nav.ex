@@ -2,6 +2,9 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
   use Phoenix.Component
   import Uikit.Components
 
+  attr :categories, :list, required: true
+  attr :active_category, Alexandria.Core.Category, default: nil
+
   def category_nav(assigns) do
     ~H"""
     <nav class="uk-background-muted uk-border-right side-nav">
@@ -14,11 +17,15 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
       </div>
       <ul class="uk-nav uk-width-medium uk-margin-top category-nav">
         <li
-          class="category-nav__category
-    "
+          :for={category <- @categories}
+          class="category-nav__category"
           data-test-all-files=""
         >
-          <div class="uk-link-reset active" tabindex="0" data-test-link="">
+          <div
+            class={["uk-link-reset", category.slug == @active_category.slug && "active"]}
+            tabindex="0"
+            data-test-link=""
+          >
             <div class="uk-flex uk-flex-middle">
               <div class="uk-margin-right ">
                 <svg
@@ -42,15 +49,26 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
                 </svg>
               </div>
               <div class="uk-text-break uk-overflow-hidden" data-test-name="">
-                Alle Dokumente
+                {category.display_name}
               </div>
-              <div class="uk-margin-left uk-flex-auto category-nav__category__info-icon"></div>
+              <.uk_icon
+                name="info"
+                class="uk-margin-auto-left uk-margin-right uk-text-muted uk-flex-auto uk-text-right category-nav__category__info-icon"
+                tabindex="0"
+                aria-haspopup="true"
+                aria-expanded="false"
+              />
+              <.uk_dropdown id={category.slug <> "-tooltip"} class="category-nav__category__info-box">
+                <div>
+                  <p>{category.display_description}</p>
+                </div>
+              </.uk_dropdown>
 
               <div
                 class="uk-margin-auto-left uk-margin-right uk-text-muted uk-text-right"
                 data-test-document-count=""
               >
-                20
+                {category.active_document_count}
               </div>
             </div>
           </div>
