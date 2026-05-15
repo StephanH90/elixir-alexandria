@@ -25,3 +25,9 @@ config :alexandria, :storage,
   secret_access_key: System.get_env("ALEXANDRIA_S3_SECRET_ACCESS_KEY", "dev"),
   endpoint_url: System.get_env("ALEXANDRIA_S3_ENDPOINT_URL", "http://localhost:3900"),
   region: "garage"
+
+config :ash, policies: [
+    show_policy_breakdowns?: true,
+    no_filter_static_forbidden_reads?: false
+  ]
+
