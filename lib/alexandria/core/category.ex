@@ -110,12 +110,6 @@ defmodule Alexandria.Core.Category do
       destination_attribute: :category_id
   end
 
-  aggregates do
-    count :active_document_count, :documents do
-      filter expr(not archived?)
-    end
-  end
-
   calculations do
     calculate :display_name,
               :string,
