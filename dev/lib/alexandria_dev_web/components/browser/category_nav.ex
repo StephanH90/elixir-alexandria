@@ -20,6 +20,8 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
           :for={category <- @categories}
           class="category-nav__category"
           data-test-all-files=""
+          phx-click="alexandria:navigate"
+          phx-value-category={category.slug}
         >
           <div
             class={["uk-link-reset", category.slug == @active_category.slug && "active"]}

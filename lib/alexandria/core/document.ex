@@ -140,6 +140,15 @@ defmodule Alexandria.Core.Document do
     policy always() do
       authorize_if always()
     end
+
+    policy action_type(:read) do
+      authorize_if actor_attribute_equals(:role, :admin)
+      # authorize_if always()
+    end
+  end
+
+  preparations do
+    prepare build(load: [:display_title, :display_description])
   end
 
   attributes do
