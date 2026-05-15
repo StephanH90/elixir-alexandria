@@ -1,5 +1,6 @@
 defmodule AlexandriaDevWeb.BrowserLive do
-  use Phoenix.LiveView, layout: {AlexandriaDevWeb.Layouts, :root}
+  use Phoenix.LiveView, layout: {AlexandriaDevWeb.Layouts, :root} # todo: this is old syntax
+  use Phoenix.VerifiedRoutes, endpoint: AlexandriaDevWeb.Endpoint, router: AlexandriaDevWeb.Router # todo: this needs to be injected or loaded dynamically in this addon
 
   import AlexandriaDevWeb.Components.Browser.CategoryNav
   import AlexandriaDevWeb.Components.Browser.DocumentList
