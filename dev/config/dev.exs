@@ -15,6 +15,7 @@ config :alexandria_dev, AlexandriaDevWeb.Endpoint,
     patterns: [
       ~r"lib/alexandria_dev_web/.*(ex|heex)$",
       ~r"../lib/alexandria/.*(ex|heex)$",
+      ~r"fragments/.*\.ex$",
       ~r"priv/static/assets/.*(css|js)$"
     ]
   ]
@@ -29,8 +30,8 @@ config :alexandria, :storage,
   endpoint_url: System.get_env("ALEXANDRIA_S3_ENDPOINT_URL", "http://localhost:3900"),
   region: "garage"
 
-config :ash, policies: [
+config :ash,
+  policies: [
     show_policy_breakdowns?: true,
     no_filter_static_forbidden_reads?: false
   ]
-

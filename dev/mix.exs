@@ -8,6 +8,7 @@ defmodule AlexandriaDev.MixProject do
       elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      consolidate_protocols: Mix.env() != :dev,
       deps: deps(),
       aliases: aliases(),
       listeners: [Phoenix.CodeReloader]
