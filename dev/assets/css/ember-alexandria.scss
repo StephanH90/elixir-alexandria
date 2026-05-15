@@ -1,0 +1,22 @@
+// 3rd party
+@import "ember-uikit/variables-theme";
+@import "ember-uikit";
+@import "flatpickr/dist/flatpickr";
+@import "flatpickr/dist/themes/airbnb";
+
+// custom variables
+$tag-hover-shadow: 0 2px 8px rgb(0 0 0 / 20%);
+
+// components
+@import "components/category-nav";
+@import "components/document-card";
+@import "components/document-details";
+@import "components/document-grid";
+@import "components/document-list";
+@import "components/drop";
+@import "components/skeleton";
+@import "components/tags";
+
+// customization
+@import "custom-uikit-rules";
+@import "responsive";

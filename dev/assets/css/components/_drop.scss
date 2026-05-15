@@ -1,0 +1,34 @@
+@use "sass:math";
+
+.drop {
+  width: 200px;
+
+  .item {
+    @extend .uk-link-reset;
+
+    padding: 5px 10px;
+    cursor: pointer;
+
+    &:hover {
+      background: $global-muted-background;
+    }
+
+    &--indent {
+      padding-left: 25px;
+    }
+
+    svg {
+      font-size: 1.2em;
+      margin-right: 10px;
+    }
+  }
+}
+
+.drag-info {
+  padding: math.div($padding-small-padding, 3) $padding-small-padding;
+  border-color: $global-primary-background;
+  position: fixed;
+  top: 0;
+  right: 0;
+  transform: translate(100%, -100%);
+}

@@ -38,7 +38,7 @@ config :dart_sass,
   version: "1.77.8",
   default: [
     args:
-      ~w(--load-path=../deps/elixir_uikit/priv/vendor/uikit/scss css/app.scss ../priv/static/assets/css/app.css),
+      ~w(--load-path=../deps/elixir_uikit/priv/vendor/uikit/scss --load-path=vendor-shim css/app.scss ../priv/static/assets/css/app.css),
     cd: Path.expand("../assets", __DIR__)
   ]
 

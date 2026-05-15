@@ -1,0 +1,48 @@
+@mixin active {
+  background: $background-default-background;
+}
+
+.category-header {
+  line-height: 40px;
+}
+
+.uk-nav .category-nav__category {
+  &--dragover {
+    outline: 1px solid $alert-primary-color;
+    outline-offset: -1px;
+
+    > div {
+      background-color: rgba($alert-primary-color, 0.25) !important;
+    }
+  }
+
+  > div {
+    transition-property: background, box-shadow, color;
+    transition-duration: $animation-duration;
+    padding: 10px 0 10px $global-margin;
+    cursor: pointer;
+
+    &.active {
+      @include active;
+    }
+
+    &:hover {
+      @include active;
+      @extend .uk-box-shadow-small;
+    }
+
+    .skeleton-text {
+      height: 15px;
+      width: 70%;
+    }
+  }
+
+  &__info-icon {
+    min-width: 20px;
+  }
+
+  &__info-box > div > p:last-child {
+    margin-bottom: 0;
+    max-width: 400px;
+  }
+}

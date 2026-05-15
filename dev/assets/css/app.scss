@@ -1,7 +1,6 @@
-// UIkit (loaded via dart_sass --load-path)
-@import "variables-theme";
-@import "mixins-theme";
-@import "uikit-theme";
+// Upstream ember-alexandria entry (vendored verbatim).
+// ember-uikit + flatpickr resolved via shim load-path (see config.exs).
+@import "ember-alexandria";
 
 html, body { height: 100%; margin: 0; }
 body > div[data-phx-main],

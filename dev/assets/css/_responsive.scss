@@ -1,0 +1,88 @@
+$animation-duration: 0.75s;
+
+.alexandria-container {
+  container: alexandria / inline-size;
+}
+
+.document-view {
+  container: table / inline-size;
+}
+
+.document-details {
+  > div {
+    transition: min-width $animation-duration ease-in-out;
+  }
+}
+
+@container alexandria (max-width: 1625px) {
+  .document-details {
+    > div {
+      min-width: 375px;
+    }
+  }
+}
+
+@container alexandria (max-width: 1550px) {
+  .document-details {
+    > div {
+      min-width: 300px;
+    }
+  }
+}
+
+@container alexandria (max-width: 1475px) {
+  .document-details {
+    > div {
+      min-width: 225px;
+    }
+  }
+}
+
+@container table (max-width: 650px) {
+  .document-list-item-createdByUser {
+    display: none;
+  }
+}
+
+@container table (max-width: 750px) {
+  .side-nav > div:first-child {
+    font-size: 0;
+  }
+
+  .category-nav {
+    width: 60px;
+  }
+
+  .category-nav__category div > div > :not(:first-child) {
+    display: none;
+  }
+
+  .category-nav__category
+    > ul
+    > .category-nav__category
+    div
+    > div
+    > div:first-child {
+    margin-left: 0 !important;
+  }
+
+  .document-list-item-date {
+    display: none;
+  }
+
+  ul.version-history > li {
+    > span:nth-child(1) {
+      flex: 1;
+    }
+
+    > span:nth-child(2) {
+      display: none;
+    }
+  }
+}
+
+@container table (max-width: 550px) {
+  .document-list-item-modifiedAt {
+    display: none;
+  }
+}

@@ -1,0 +1,80 @@
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.document-details {
+  transition: width $animation-duration;
+
+  > div {
+    min-width: $width-large-width;
+    overflow: hidden;
+  }
+
+  &.closed {
+    width: 0;
+  }
+
+  .uk-text-meta > button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .uk-text-break {
+    word-break: break-all;
+  }
+}
+
+.document-description {
+  white-space: pre-wrap;
+}
+
+.document-marks {
+  .mark {
+    height: 1.5rem;
+    width: 1.5rem;
+    font-size: 1.3rem;
+    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    border-radius: 10px;
+    border: 1px solid $global-muted-color;
+    background-color: #fff;
+    cursor: pointer;
+    transition-property: box-shadow, background-color, border-color, fill;
+    transition-duration: $animation-duration;
+    transition-timing-function: ease-in-out;
+
+    svg path {
+      transition: fill $animation-duration ease-in-out;
+    }
+
+    &--active {
+      background-color: $global-primary-background;
+      border-color: $global-primary-background;
+
+      svg path {
+        fill: #fff;
+      }
+    }
+
+    &--mixed {
+      border-color: $global-primary-background;
+    }
+
+    &:hover {
+      box-shadow: $tag-hover-shadow;
+    }
+
+    &__info-box > div > p:last-child {
+      margin-bottom: 0;
+      max-width: 400px;
+    }
+  }
+}

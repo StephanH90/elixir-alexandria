@@ -1,0 +1,23 @@
+.document-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 200px);
+  gap: 15px;
+  justify-content: center;
+  padding-bottom: 15px;
+
+  &.empty {
+    grid-column: 1 end;
+  }
+
+  &--dragover {
+    border: 1px solid $alert-primary-color;
+  }
+
+  &--disallowed {
+    border-color: $alert-danger-color;
+
+    & > button {
+      background-color: $alert-danger-color;
+    }
+  }
+}
