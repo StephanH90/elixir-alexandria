@@ -42,4 +42,10 @@ config :dart_sass,
     cd: Path.expand("../assets", __DIR__)
   ]
 
+config :alexandria, :extra_elixirc_paths, ["dev/fragments"]
+
+config :alexandria,
+       Alexandria.Core.Document,
+       fragments: [AlexandriaDev.Fragments.Document]
+
 import_config "#{config_env()}.exs"
