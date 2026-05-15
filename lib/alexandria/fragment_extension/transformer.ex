@@ -17,6 +17,15 @@ defmodule Alexandria.FragmentExtension.Transformer do
 
   alias Spark.Dsl.Transformer, as: DslTransformer
 
+  # Fragment merging must happen before every other resource transformer.
+  # Several built-in Ash transformers (e.g. `SetRelationshipSource`,
+  # `CacheRelationships`, `BelongsToAttribute`, ...) walk the DSL state and
+  # mutate entities (set `:source`, derive join attrs, etc). If they run
+  # before our merge, fragment-added entities miss those passes — most
+  # visibly, a fragment-added `has_one` ends up with `source: nil` and
+  # blows up at load time inside `Ash.DataLayer.data_layer_can?/2`.
+  def before?(_), do: true
+
   def transform(dsl_state) do
     module = DslTransformer.get_persisted(dsl_state, :module)
     otp_app = DslTransformer.get_persisted(dsl_state, :otp_app)
@@ -28,9 +37,46 @@ defmodule Alexandria.FragmentExtension.Transformer do
       end
 
     fragments = available(fragments, module)
+    Enum.each(fragments, &reject_attributes!(&1, module))
     register_external_resources(module, fragments)
 
     {:ok, Spark.Dsl.handle_fragments(dsl_state, fragments)}
+  end
+
+  # Fragments may not introduce attributes. The consumer's app does not own
+  # this resource's table or migrations, so a fragment-added attribute would
+  # appear in generated SQL with no backing column. Steer consumers to
+  # `metainfo` JSONB, a sidecar resource in their own domain, or a
+  # calculation/aggregate.
+  defp reject_attributes!(frag, host) do
+    entities =
+      frag.spark_dsl_config()
+      |> Map.get([:attributes], %{})
+      |> Map.get(:entities, [])
+
+    case Enum.map(entities, & &1.name) do
+      [] ->
+        :ok
+
+      names ->
+        raise Spark.Error.DslError,
+          module: frag,
+          path: [:attributes],
+          message: """
+          Fragment #{inspect(frag)} for #{inspect(host)} declares \
+          attribute(s) #{inspect(names)}. Fragments may not add attributes \
+          to host resources — the consumer does not own #{inspect(host)}'s \
+          table or migrations.
+
+          Alternatives:
+            * store consumer-owned data in the existing `metainfo` JSONB \
+              column (read via a `calculate` using `fragment/2`, write via \
+              an update action that merges into `metainfo`)
+            * create a sidecar resource in the consumer's own domain with a \
+              `belongs_to` back to #{inspect(host)}
+            * if the value is derived, use a `calculate` or `aggregate`
+          """
+    end
   end
 
   # Register each fragment's source file as an `@external_resource` of
