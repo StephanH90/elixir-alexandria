@@ -17,12 +17,11 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
       </div>
       <ul class="uk-nav uk-width-medium uk-margin-top category-nav">
         <li
-          :for={category <- @categories}
           class="category-nav__category"
           data-test-all-files=""
         >
           <div
-            class={["uk-link-reset", category.slug == @active_category.slug && "active"]}
+            class="uk-link-reset active"
             tabindex="0"
             data-test-link=""
           >
@@ -49,7 +48,7 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
                 </svg>
               </div>
               <div class="uk-text-break uk-overflow-hidden" data-test-name="">
-                {category.display_name}
+                Display name
               </div>
               <.uk_icon
                 name="info"
@@ -58,9 +57,9 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
                 aria-haspopup="true"
                 aria-expanded="false"
               />
-              <.uk_dropdown id={category.slug <> "-tooltip"} class="category-nav__category__info-box">
+              <.uk_dropdown id="tooltip"} class="category-nav__category__info-box">
                 <div>
-                  <p>{category.display_description}</p>
+                  <p>Description</p>
                 </div>
               </.uk_dropdown>
 
@@ -68,7 +67,7 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
                 class="uk-margin-auto-left uk-margin-right uk-text-muted uk-text-right"
                 data-test-document-count=""
               >
-                {category.active_document_count}
+                active document count
               </div>
             </div>
           </div>

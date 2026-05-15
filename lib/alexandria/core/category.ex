@@ -71,6 +71,10 @@ defmodule Alexandria.Core.Category do
     end
   end
 
+  preparations do
+    prepare build(load: [:display_name, :display_description])
+  end
+
   attributes do
     attribute :slug, :string do
       primary_key? true
@@ -106,12 +110,6 @@ defmodule Alexandria.Core.Category do
       destination_attribute: :category_id
   end
 
-  aggregates do
-    count :active_document_count, :documents do
-      filter expr(not archived?)
-    end
-  end
-
   calculations do
     calculate :display_name,
               :string,
@@ -122,7 +120,9 @@ defmodule Alexandria.Core.Category do
               {Alexandria.Calculations.LocalizedField, attribute: :description}
   end
 
-  preparations do
-    prepare build(load: [:display_name, :display_description]) 
+  aggregates do
+    count :active_document_count, :documents do
+      filter expr(not archived?)
+    end
   end
 end

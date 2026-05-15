@@ -11,7 +11,7 @@ defmodule AlexandriaDevWeb.BrowserLive do
   def render(assigns) do
     ~H"""
     <div class="alexandria-container uk-flex uk-flex-1 uk-height-1-1 uk-border uk-background-default">
-      <.category_nav categories={@categories} active_category={@active_category} />
+      <.category_nav categories={[]} active_category={nil} />
       <section class="uk-width-1 uk-flex uk-flex-column uk-overflow-hidden uk-height-max-1">
         <div class="uk-background-muted uk-padding-small uk-border-bottom uk-width-1">
           <.search_bar />
@@ -46,10 +46,7 @@ defmodule AlexandriaDevWeb.BrowserLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    scope = %AlexandriaDev.Scope{locale: "de-ch"}
-    categories = Alexandria.Core.list_root_categories!(scope: scope, load: :active_document_count)
-
-    socket = assign(socket, categories: categories, active_category: List.first(categories))
+    _scope = %AlexandriaDev.Scope{locale: "de-ch"}
 
     {:ok, socket}
   end
