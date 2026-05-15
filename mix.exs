@@ -54,5 +54,13 @@ defmodule Alexandria.MixProject do
   end
 
   defp elixirc_paths(:test), do: elixirc_paths(:dev) ++ ["test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  defp elixirc_paths(_), do: ["lib"] ++ extra_paths()
+
+  # Consumer apps can append source directories to Alexandria's compile
+  # by setting `config :alexandria, :extra_elixirc_paths, [...]` in their
+  # own `config/config.exs`. This lets a consumer put `Spark.Dsl.Fragment`
+  # modules in its own repo and have them compile alongside Alexandria,
+  # avoiding the "fragment module not loaded when dep compiles" trap.
+  # Paths should be absolute (use `Path.expand/2` against `__DIR__`).
+  defp extra_paths, do: Application.get_env(:alexandria, :extra_elixirc_paths, [])
 end
