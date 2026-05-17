@@ -113,7 +113,8 @@ defmodule Alexandria.Core.Category do
   calculations do
     calculate :display_name,
               :string,
-              {Alexandria.Calculations.LocalizedField, attribute: :name}
+              {Alexandria.Calculations.LocalizedField, attribute: :name},
+              public?: true
 
     calculate :display_description,
               :string,

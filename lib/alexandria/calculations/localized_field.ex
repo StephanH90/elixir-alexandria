@@ -30,6 +30,22 @@ defmodule Alexandria.Calculations.LocalizedField do
     end)
   end
 
+  @impl true
+  def expression(opts, context) do
+    locale = locale_from(context)
+    attr = opts[:attribute]
+
+    # looks up language and fallsback to "en"
+    # TODO: Inject fallback language (via Gettext?)
+    expr(
+      if is_nil(get_path(^ref(attr), [^locale])) do
+        get_path(^ref(attr), ["en"])
+      else
+        get_path(^ref(attr), [^locale])
+      end
+    )
+  end
+
   defp locale_from(%{source_context: %{shared: %{locale: locale}}}) when is_binary(locale),
     do: locale
 
