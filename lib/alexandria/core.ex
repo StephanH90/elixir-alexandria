@@ -1,7 +1,7 @@
 defmodule Alexandria.Core do
   use Ash.Domain,
     otp_app: :alexandria,
-    extensions: [Alexandria.FragmentExtension]
+    extensions: [Alexandria.FragmentExtension, AshPhoenix]
 
   resources do
     resource Alexandria.Core.Category do
@@ -71,6 +71,8 @@ defmodule Alexandria.Core do
       define :archive_document, action: :archive
       define :restore_document, action: :restore
       define :destroy_document, action: :destroy
+
+      define :update_document_title_description_date, action: :update_title_description_date
     end
 
     resource Alexandria.Core.File do

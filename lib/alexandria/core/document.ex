@@ -133,17 +133,16 @@ defmodule Alexandria.Core.Document do
       change {Alexandria.Core.Document.Changes.ToggleArchived, flag: :off}
     end
 
+    update :update_title_description_date do
+      accept [:title, :description, :date]
+    end
+
     destroy :destroy
   end
 
   policies do
     policy always() do
       authorize_if always()
-    end
-
-    policy action_type(:read) do
-      authorize_if actor_attribute_equals(:role, :admin)
-      # authorize_if always()
     end
   end
 
@@ -159,8 +158,8 @@ defmodule Alexandria.Core.Document do
     attribute :metainfo, :map, default: %{}, public?: true
     attribute :created_by_user, :string, public?: true
     attribute :created_by_group, :string, public?: true
-    create_timestamp :created_at
-    update_timestamp :modified_at
+    create_timestamp :created_at, public?: true
+    update_timestamp :modified_at, public?: true
   end
 
   relationships do
