@@ -7,9 +7,11 @@ defmodule AlexandriaDev.Fragments.Document do
     end
   end
 
-  actions do
-    read :foobar do
-      filter expr(not archived?)
-    end
+  calculations do
+    calculate :created_by_username, :string, "foobar"
+  end
+
+  preparations do
+    prepare build(load: :created_by_username)
   end
 end
