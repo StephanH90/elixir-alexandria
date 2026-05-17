@@ -2,6 +2,9 @@ defmodule AlexandriaDevWeb.Components.Browser.DocumentList do
   use Phoenix.Component
 
   attr :documents, :list, default: []
+  attr :current_sort, :string, required: true
+  attr :selected_documents, :list, default: []
+
   def document_list(assigns) do
     ~H"""
     <table class="uk-table uk-table-divider uk-table-striped uk-table-hover no-select document-list">
@@ -17,164 +20,34 @@ defmodule AlexandriaDevWeb.Components.Browser.DocumentList do
               Typ
             </span>
           </th>
-          <th
-            class="uk-text-nowrap uk-table-expand document-list-item-title cursor-pointer"
-            data-test-sort="title"
-            role="button"
-          >
-            Dokumententitel
-            <svg
-              class="svg-inline--fa fa-sort fa-1x uk-margin-small-left"
-              data-prefix="fas"
-              data-icon="sort"
-              aria-hidden="true"
-              focusable="false"
-              role="presentation"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
-            >
-              <path
-                fill="currentColor"
-                d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z"
-              >
-              </path>
-            </svg>
-          </th>
-          <th
-            class="uk-text-nowrap document-list-item-marks"
-            data-test-sort="marks"
-            role="none"
-          >
-            <span hidden="">
-              Markierungen
-            </span>
-          </th>
-          <th
-            class="uk-text-nowrap document-list-item-date cursor-pointer"
-            data-test-sort="date"
-            role="button"
-          >
-            Datum
-            <svg
-              class="svg-inline--fa fa-sort fa-1x uk-margin-small-left"
-              data-prefix="fas"
-              data-icon="sort"
-              aria-hidden="true"
-              focusable="false"
-              role="presentation"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
-            >
-              <path
-                fill="currentColor"
-                d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z"
-              >
-              </path>
-            </svg>
-          </th>
-          <th
-            class="uk-text-nowrap document-list-item-modifiedAt cursor-pointer"
-            data-test-sort="modifiedAt"
-            role="button"
-          >
-            Änderungsdatum
-            <svg
-              class="svg-inline--fa fa-sort fa-1x uk-margin-small-left"
-              data-prefix="fas"
-              data-icon="sort"
-              aria-hidden="true"
-              focusable="false"
-              role="presentation"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
-            >
-              <path
-                fill="currentColor"
-                d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z"
-              >
-              </path>
-            </svg>
-          </th>
-          <th
-            class="uk-text-nowrap document-list-item-createdByUser cursor-pointer"
-            data-test-sort="createdByUser"
-            role="button"
-          >
-            Ersteller
-            <svg
-              class="svg-inline--fa fa-sort fa-1x uk-margin-small-left"
-              data-prefix="fas"
-              data-icon="sort"
-              aria-hidden="true"
-              focusable="false"
-              role="presentation"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
-            >
-              <path
-                fill="currentColor"
-                d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z"
-              >
-              </path>
-            </svg>
-          </th>
-          <th
-            class="uk-text-nowrap document-list-item-createdByGroup cursor-pointer"
-            data-test-sort="createdByGroup"
-            role="button"
-          >
-            Organisation
-            <svg
-              class="svg-inline--fa fa-sort fa-1x uk-margin-small-left"
-              data-prefix="fas"
-              data-icon="sort"
-              aria-hidden="true"
-              focusable="false"
-              role="presentation"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
-            >
-              <path
-                fill="currentColor"
-                d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z"
-              >
-              </path>
-            </svg>
-          </th>
-          <th
-            class="uk-text-nowrap document-list-item-category cursor-pointer"
-            data-test-sort="category"
-            role="button"
-          >
-            Kategorie
-            <svg
-              class="svg-inline--fa fa-sort fa-1x uk-margin-small-left"
-              data-prefix="fas"
-              data-icon="sort"
-              aria-hidden="true"
-              focusable="false"
-              role="presentation"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
-            >
-              <path
-                fill="currentColor"
-                d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z"
-              >
-              </path>
-            </svg>
-          </th>
+          <.sortable_header label="Dokumententitel" attr="title" current_sort={@current_sort} />
+          <.sortable_header label="Markierungen" attr="marks" current_sort={@current_sort} />
+          <.sortable_header label="Datum" attr="created_at" current_sort={@current_sort} />
+          <.sortable_header label="Änderungsdatum" attr="modified_at" current_sort={@current_sort} />
+          <.sortable_header label="Ersteller" attr="created_by_user" current_sort={@current_sort} />
+          <.sortable_header label="Organisation" attr="created_by_group" current_sort={@current_sort} />
+          <.sortable_header
+            label="Kategorie"
+            attr="category.display_name"
+            current_sort={@current_sort}
+          />
         </tr>
       </thead>
 
       <tbody>
         <tr
           :for={document <- @documents}
-          class="document-list-item"
+          class={[
+            "document-list-item",
+            Enum.member?(@selected_documents, document.id) && "document-list-item--selected"
+          ]}
           data-test-document-list-item=""
           data-test-document-list-item-id="e538654f-eaeb-4564-81c9-b561efc08913"
           tabindex="0"
           draggable="true"
+          phx-click="alexandria:document-selected"
+          phx-value-id={document.id}
+          id={"document-row-#{document.id}"}
         >
           <td class="uk-preserve-width document-list-item-type">
             <svg
@@ -216,23 +89,59 @@ defmodule AlexandriaDevWeb.Components.Browser.DocumentList do
           <td class="list-marks uk-flex document-list-item-marks">
             <!---->
           </td>
-          <td class="document-list-item-date"></td>
+          <td class="document-list-item-date">
+            TODO: inject i18n <time datetime={document.created_at}>{document.created_at}</time>
+          </td>
           <td class="document-list-item-modifiedAt">
-            TODO: inject i18n
-            <time datetime={document.modified_at}>{document.modified_at}</time>
+            TODO: inject i18n <time datetime={document.modified_at}>{document.modified_at}</time>
           </td>
           <td class="document-list-item-createdByUser">
-            TODO: inject resolver
-            {document.created_by_user}
+            TODO: inject resolver {document.created_by_username}
           </td>
           <td class="document-list-itemcreatedByGroup">
-            TODO: inject resolver
-            {document.created_by_user}
+            TODO: inject resolver {document.created_by_user}
           </td>
           <td>{document.category.display_name}</td>
         </tr>
       </tbody>
     </table>
+    """
+  end
+
+  attr :type, :string, required: true
+  attr :current_sort, :string, required: true
+
+  defp sort_icon(assigns) do
+    icon =
+      cond do
+        assigns.current_sort == assigns.type -> "arrow-up"
+        assigns.current_sort == "-#{assigns.type}" -> "arrow-down"
+        true -> "arrow-down-arrow-up"
+      end
+
+    assigns = assign(assigns, :icon, icon)
+
+    ~H"""
+    <Uikit.Components.uk_icon name={@icon} class="uk-margin-small-left" />
+    """
+  end
+
+  attr :attr, :string, required: true
+  attr :current_sort, :string, required: true
+  attr :label, :string, required: true
+
+  defp sortable_header(assigns) do
+    ~H"""
+    <th
+      class={"uk-text-nowrap uk-table-expand document-list-item-#{@attr} cursor-pointer"}
+      data-test-sort={@attr}
+      role="button"
+      phx-click="alexandria:update-sort"
+      phx-value-sort={(@current_sort == @attr && "-#{@attr}") || @attr}
+    >
+      {@label}
+      <.sort_icon current_sort={@current_sort} type={@attr} />
+    </th>
     """
   end
 end

@@ -18,7 +18,13 @@ const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
   hooks: {...UikitHooks, ...colocatedHooks},
-  dom: { onBeforeElUpdated }
+  dom: { onBeforeElUpdated },
+  metadata: {
+    click: (e, el) => ({
+      shiftKey: e.shiftKey,
+      ctrlKey: e.ctrlKey,
+    })
+  }
 })
 liveSocket.connect()
 window.liveSocket = liveSocket
