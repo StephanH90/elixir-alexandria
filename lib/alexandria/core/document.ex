@@ -197,4 +197,8 @@ defmodule Alexandria.Core.Document do
               :boolean,
               expr(not is_nil(fragment("?->>'archived_at'", metainfo)))
   end
+
+  aggregates do
+    list :tags_slugs, :tags, field: :slug
+  end
 end
