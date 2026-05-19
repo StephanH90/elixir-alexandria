@@ -4,8 +4,7 @@ defmodule Alexandria.Core.File do
     otp_app: :alexandria,
     domain: Alexandria.Core,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer],
-    extensions: [Alexandria.FragmentExtension]
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "alexandria_core_file"

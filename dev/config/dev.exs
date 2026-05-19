@@ -15,7 +15,6 @@ config :alexandria_dev, AlexandriaDevWeb.Endpoint,
     patterns: [
       ~r"lib/alexandria_dev_web/.*(ex|heex)$",
       ~r"../lib/alexandria/.*(ex|heex)$",
-      ~r"fragments/.*\.ex$",
       ~r"priv/static/assets/.*(css|js)$"
     ]
   ]
