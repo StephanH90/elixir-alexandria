@@ -36,7 +36,7 @@ defmodule Alexandria.MixProject do
       {:spark, "~> 2.2"},
       {:phoenix_test, "~> 0.8", only: :test, runtime: false},
       {:usage_rules, "~> 1.0", only: :dev},
-      {:igniter, "~> 0.6", only: [:dev, :test]}
+      {:igniter, "~> 0.6"}
     ]
   end
 
