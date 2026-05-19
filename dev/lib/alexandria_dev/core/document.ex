@@ -8,5 +8,10 @@ defmodule AlexandriaDev.Core.Document do
 
   alexandria_document do
     category_resource AlexandriaDev.Core.Category
+    tag_resource AlexandriaDev.Core.Tag
+    mark_resource AlexandriaDev.Core.Mark
+    file_resource AlexandriaDev.Core.File
+    document_tag_resource AlexandriaDev.Core.DocumentTag
+    document_mark_resource AlexandriaDev.Core.DocumentMark
   end
 end

@@ -11,5 +11,11 @@ defmodule AlexandriaDev.Core do
   resources do
     resource AlexandriaDev.Core.Category
     resource AlexandriaDev.Core.Document
+    resource AlexandriaDev.Core.DocumentMark
+    resource AlexandriaDev.Core.DocumentTag
+    resource AlexandriaDev.Core.File
+    resource AlexandriaDev.Core.Mark
+    resource AlexandriaDev.Core.Tag
+    resource AlexandriaDev.Core.TagSynonymGroup
   end
 end
