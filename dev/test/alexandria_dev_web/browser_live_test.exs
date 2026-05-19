@@ -13,7 +13,8 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
     {:ok, doc} =
       Alexandria.Core.create_document(
         %{title: %{"en" => "Doc A"}, category_id: cat.slug},
-        scope: scope
+        scope: scope,
+        load: :display_title
       )
 
     {:ok, %{category: cat, document: doc}}
@@ -61,5 +62,14 @@ defmodule AlexandriaDevWeb.BrowserLiveTest do
     |> click_link("Doc A")
     |> click_button("Archive")
     |> refute_has("a", text: "Doc A")
+  end
+
+  test "setting a mark", %{conn: conn, document: document} do
+    conn
+    |> visit("/")
+    |> click_button(document.display_title)
+    |> refute_has("button.mark.mark--active")
+    |> click_button("decision")
+    |> assert_has("button.mark.mark--active")
   end
 end

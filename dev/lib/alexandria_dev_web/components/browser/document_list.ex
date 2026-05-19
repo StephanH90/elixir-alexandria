@@ -48,6 +48,7 @@ defmodule AlexandriaDevWeb.Components.Browser.DocumentList do
           phx-click="alexandria:document-selected"
           phx-value-id={document.id}
           id={"document-row-#{document.id}"}
+          role="button"
         >
           <td class="uk-preserve-width document-list-item-type">
             <svg

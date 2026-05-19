@@ -4,6 +4,7 @@ defmodule AlexandriaDev.Fragments.Document do
   policies do
     policy action_type(:read) do
       authorize_if always()
+      # forbid_if always()
     end
   end
 

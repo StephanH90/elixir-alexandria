@@ -33,9 +33,10 @@ defmodule AlexandriaDevWeb.BrowserLive do
     documents =
       Alexandria.Core.list_active_documents_by_category!(active_category.slug,
         scope: socket.assigns.scope,
-        load: :category,
+        load: [:category, :tags_slugs],
         query: [sort: Ash.Sort.parse_input!(Alexandria.Core.Document, sort)]
       )
+      |> dbg()
 
     socket =
       assign(socket,

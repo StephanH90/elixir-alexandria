@@ -21,6 +21,7 @@ defmodule AlexandriaDevWeb.Components.Browser.SidePanel do
       |> assign(assigns)
       |> assign(:document, document)
       |> assign_or_reuse_form(selected_document_id, document)
+      |> assign_new(:marks, fn -> Alexandria.Core.list_marks!(scope: assigns.scope) end)
 
     {:ok, socket}
   end
@@ -79,14 +80,51 @@ defmodule AlexandriaDevWeb.Components.Browser.SidePanel do
     {:noreply, assign(socket, field, true)}
   end
 
+  @impl true
+  def handle_event("alexandria:toggle-mark", %{"mark" => mark}, socket) do
+    {:noreply, socket}
+  end
+
   # TODO: UPSTREAM THIS TO ELIXIR_UIKIT
   attr :field, Phoenix.HTML.FormField, required: true
+  attr :type, :string, values: ~w(text textarea), default: "text"
 
   defp uk_multi_lang_input(assigns) do
     value = assigns.field.value["en"]
     name = assigns.field.name <> "[en]"
-    assigns = assign(assigns, value: value, name: name)
+    assigns = assign(assigns, value: value, name: name, type: assigns.type)
     Uikit.FormComponents.uk_input(assigns)
+  end
+
+  attr :icon, :string, required: true
+  attr :name, :string, required: true
+  attr :document, Alexandria.Core.Document, required: true
+  attr :myself, Phoenix.LiveComponent.CID, required: true
+  slot :inner_block
+
+  defp mark(assigns) do
+    assigns = assign(assigns, :selected?, Enum.member?(assigns.document.tags_slugs, assigns.name))
+
+    ~H"""
+    <button
+      class={["mark", @selected? && "mark--active"]}
+      aria-haspopup="true"
+      aria-expanded="false"
+      phx-click="alexandria:toggle-mark"
+      phx-value-mark={@name}
+      phx-target={@myself}
+      test-mark-button={@name}
+    >
+      {@name}
+    </button>
+    <div
+      uk-dropdown=""
+      class="uk-padding-small mark__info-box uk-dropdown uk-drop"
+      style="top: 114px; left: 1px; max-width: 420px;"
+    >
+      {render_slot(@inner_block)}
+    </div>
+    """
   end
 
   attr :selected_documents, :list, default: []
@@ -151,15 +189,6 @@ defmodule AlexandriaDevWeb.Components.Browser.SidePanel do
                         uk-icon="icon: check"
                         data-test-save=""
                       >
-                        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-                          <polyline
-                            fill="none"
-                            stroke="#000"
-                            stroke-width="1.1"
-                            points="4,10 8,15 17,4"
-                          >
-                          </polyline>
-                        </svg>
                       </button>
                     </div>
                   </div>
@@ -170,35 +199,14 @@ defmodule AlexandriaDevWeb.Components.Browser.SidePanel do
                 </div>
 
                 <div class="document-marks uk-margin">
-                  <label class="mark " tabindex="0" aria-haspopup="true" aria-expanded="false">
-                    <svg
-                      class="svg-inline--fa fa-stamp fa-fw"
-                      data-prefix="fas"
-                      data-icon="stamp"
-                      aria-hidden="true"
-                      focusable="false"
-                      role="img"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 512 512"
-                    >
-                      <path
-                        fill="currentColor"
-                        d="M312 201.8c0-17.4 9.2-33.2 19.9-47C344.5 138.5 352 118.1 352 96c0-53-43-96-96-96s-96 43-96 96c0 22.1 7.5 42.5 20.1 58.8c10.7 13.8 19.9 29.6 19.9 47c0 29.9-24.3 54.2-54.2 54.2L112 256C50.1 256 0 306.1 0 368c0 20.9 13.4 38.7 32 45.3L32 464c0 26.5 21.5 48 48 48l352 0c26.5 0 48-21.5 48-48l0-50.7c18.6-6.6 32-24.4 32-45.3c0-61.9-50.1-112-112-112l-33.8 0c-29.9 0-54.2-24.3-54.2-54.2zM416 416l0 32L96 448l0-32 320 0z"
-                      >
-                      </path>
-                    </svg>
-                    <input hidden="" data-test-add-mark="decision" type="checkbox" />
-                  </label>
-                  <div
-                    uk-dropdown=""
-                    class="uk-padding-small mark__info-box uk-dropdown uk-drop"
-                    style="top: 114px; left: 1px; max-width: 420px;"
-                  >
+                  <.mark name="decision" icon="stamp" myself={@myself} document={@document}>
                     <strong>Entscheiddokument</strong>
-                    <div>
-                      <!---->
-                    </div>
-                  </div>
+                  </.mark>
+
+                  <.mark name="publication" icon="bullhorn" myself={@myself} document={@document}>
+                    <strong>Publikationsdokument</strong>
+                  </.mark>
+
                   <label class="mark " tabindex="0" aria-haspopup="true" aria-expanded="false">
                     <svg
                       class="svg-inline--fa fa-bullhorn fa-fw"
@@ -298,22 +306,11 @@ defmodule AlexandriaDevWeb.Components.Browser.SidePanel do
                       phx-value-field="description"
                       phx-target={@myself}
                     >
-                      Dokumentenbeschreibung
-                      <span uk-icon="" icon="pencil" class="uk-icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-                          <path
-                            fill="none"
-                            stroke="#000"
-                            d="M17.25,6.01 L7.12,16.1 L3.82,17.2 L5.02,13.9 L15.12,3.88 C15.71,3.29 16.66,3.29 17.25,3.88 C17.83,4.47 17.83,5.42 17.25,6.01 L17.25,6.01 Z"
-                          >
-                          </path>
-                          <path fill="none" stroke="#000" d="M15.98,7.268 L13.851,5.148"></path>
-                        </svg>
-                      </span>
+                      Dokumentenbeschreibung <span uk-icon="" icon="pencil" class="uk-icon"></span>
                     </button>
                   </label>
                   <div :if={@show_description_input} class="uk-flex">
-                    <.uk_multi_lang_input field={@form[:description]} />
+                    <.uk_multi_lang_input field={@form[:description]} type="textarea" />
                     <button
                       type="submit"
                       name="field"
@@ -322,10 +319,6 @@ defmodule AlexandriaDevWeb.Components.Browser.SidePanel do
                       uk-icon="icon: check"
                       data-test-save=""
                     >
-                      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-                        <polyline fill="none" stroke="#000" stroke-width="1.1" points="4,10 8,15 17,4">
-                        </polyline>
-                      </svg>
                     </button>
                   </div>
 
@@ -335,18 +328,7 @@ defmodule AlexandriaDevWeb.Components.Browser.SidePanel do
                 <div class="uk-margin">
                   <label class="uk-text-meta uk-display-block" for="date">
                     <button data-test-edit-date="" type="button">
-                      Dokumentendatum
-                      <span uk-icon="" icon="pencil" class="uk-icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-                          <path
-                            fill="none"
-                            stroke="#000"
-                            d="M17.25,6.01 L7.12,16.1 L3.82,17.2 L5.02,13.9 L15.12,3.88 C15.71,3.29 16.66,3.29 17.25,3.88 C17.83,4.47 17.83,5.42 17.25,6.01 L17.25,6.01 Z"
-                          >
-                          </path>
-                          <path fill="none" stroke="#000" d="M15.98,7.268 L13.851,5.148"></path>
-                        </svg>
-                      </span>
+                      Dokumentendatum <span uk-icon="" icon="pencil" class="uk-icon"></span>
                     </button>
                   </label>
 
