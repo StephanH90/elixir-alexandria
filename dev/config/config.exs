@@ -12,7 +12,9 @@ config :alexandria,
   ash_domains: [Alexandria.Core],
   ecto_repos: [Alexandria.Repo]
 
-config :alexandria_dev, ecto_repos: [Alexandria.Repo]
+config :alexandria_dev,
+  ash_domains: [AlexandriaDev.Core, AlexandriaDev.ExampleDomain],
+  ecto_repos: [Alexandria.Repo]
 
 config :alexandria_dev, AlexandriaDevWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
@@ -41,11 +43,5 @@ config :dart_sass,
       ~w(--load-path=../deps/elixir_uikit/priv/vendor/uikit/scss --load-path=vendor-shim css/app.scss ../priv/static/assets/css/app.css),
     cd: Path.expand("../assets", __DIR__)
   ]
-
-config :alexandria, :extra_elixirc_paths, ["dev/fragments"]
-
-config :alexandria,
-       Alexandria.Core.Document,
-       fragments: [AlexandriaDev.Fragments.Document]
 
 import_config "#{config_env()}.exs"
