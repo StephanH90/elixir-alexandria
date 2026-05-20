@@ -5,6 +5,7 @@ config :alexandria, Alexandria.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
+  port: 5434,
   database: "alexandria_dev",
   pool_size: 10
 
@@ -16,6 +17,7 @@ config :alexandria_dev, AlexandriaDev.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
+  port: 5434,
   database: "alexandria_dev_consumer",
   pool_size: 10
 

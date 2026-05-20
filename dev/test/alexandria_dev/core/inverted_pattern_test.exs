@@ -1,16 +1,17 @@
 defmodule AlexandriaDev.Core.InvertedPatternTest do
   @moduledoc """
-  Proves the inverted Alexandria extension pattern compiles and the
-  convention-based `belongs_to :category` injection works end-to-end via
-  ETS. No DB, no migrations.
+  Proves the inverted Alexandria extension pattern compiles and that the
+  consumer-declared `belongs_to :category` wires through end-to-end.
+
+  Structural tests run without a DB. Runtime tests are tagged `:db` and
+  require AlexandriaDev.Repo (sandbox checkout in setup).
   """
   use ExUnit.Case, async: false
 
-  setup do
-    on_exit(fn ->
-      Ash.DataLayer.Ets.stop(AlexandriaDev.Core.Document)
-      Ash.DataLayer.Ets.stop(AlexandriaDev.Core.Category)
-    end)
+  setup tags do
+    if tags[:db] do
+      :ok = Ecto.Adapters.SQL.Sandbox.checkout(AlexandriaDev.Repo)
+    end
 
     :ok
   end
