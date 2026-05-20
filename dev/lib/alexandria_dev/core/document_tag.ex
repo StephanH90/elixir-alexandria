@@ -3,8 +3,13 @@ defmodule AlexandriaDev.Core.DocumentTag do
   use Ash.Resource,
     otp_app: :alexandria_dev,
     domain: AlexandriaDev.Core,
-    data_layer: Ash.DataLayer.Ets,
+    data_layer: AshPostgres.DataLayer,
     extensions: [Alexandria.Core.Resource.DocumentTag]
+
+  postgres do
+    table "document_tags"
+    repo AlexandriaDev.Repo
+  end
 
   alexandria_document_tag do
     document_resource AlexandriaDev.Core.Document

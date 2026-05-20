@@ -3,6 +3,7 @@ defmodule AlexandriaDev.Application do
 
   def start(_type, _args) do
     children = [
+      AlexandriaDev.Repo,
       {Phoenix.PubSub, name: AlexandriaDev.PubSub},
       AlexandriaDevWeb.Endpoint
     ]

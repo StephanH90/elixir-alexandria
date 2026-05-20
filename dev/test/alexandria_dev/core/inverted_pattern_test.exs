@@ -304,6 +304,7 @@ defmodule AlexandriaDev.Core.InvertedPatternTest do
            end)
   end
 
+  @tag :db
   test "create + load: belongs_to traversal works at runtime" do
     {:ok, cat} =
       AlexandriaDev.Core.Category

@@ -36,6 +36,7 @@ defmodule Alexandria.Core.Resource.DocumentMark.Transformer do
     )
     |> add_primary_read_action()
     |> Ash.Resource.Builder.add_new_action(:create, :create, accept: :*, primary?: true)
+    |> Ash.Resource.Builder.add_new_action(:destroy, :destroy, primary?: true)
   end
 
   defbuilder add_primary_read_action(dsl) do

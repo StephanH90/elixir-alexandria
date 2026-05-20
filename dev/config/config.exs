@@ -12,9 +12,16 @@ config :alexandria,
   ash_domains: [Alexandria.Core],
   ecto_repos: [Alexandria.Repo]
 
+config :alexandria_dev, AlexandriaDev.Repo,
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  database: "alexandria_dev_consumer",
+  pool_size: 10
+
 config :alexandria_dev,
   ash_domains: [AlexandriaDev.Core, AlexandriaDev.ExampleDomain],
-  ecto_repos: [Alexandria.Repo]
+  ecto_repos: [Alexandria.Repo, AlexandriaDev.Repo]
 
 config :alexandria_dev, AlexandriaDevWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,

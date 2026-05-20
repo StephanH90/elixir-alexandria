@@ -50,8 +50,10 @@ defmodule AlexandriaDev.Core.DocumentTagTest do
       assert action.primary?
     end
 
-    test "no :destroy action is injected (ETS-compatible)" do
-      refute Ash.Resource.Info.action(DocumentTag, :destroy)
+    test "primary :destroy action is injected" do
+      action = Ash.Resource.Info.action(DocumentTag, :destroy)
+      assert action.type == :destroy
+      assert action.primary?
     end
   end
 end

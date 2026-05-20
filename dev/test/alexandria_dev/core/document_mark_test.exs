@@ -50,8 +50,10 @@ defmodule AlexandriaDev.Core.DocumentMarkTest do
       assert action.primary?
     end
 
-    test "no :destroy action is injected (ETS-compatible)" do
-      refute Ash.Resource.Info.action(DocumentMark, :destroy)
+    test "primary :destroy action is injected" do
+      action = Ash.Resource.Info.action(DocumentMark, :destroy)
+      assert action.type == :destroy
+      assert action.primary?
     end
   end
 end

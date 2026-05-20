@@ -80,6 +80,7 @@ defmodule Alexandria.Core.Resource.Document.Transformer do
       :has_many,
       :files,
       Info.alexandria_document_file_resource!(dsl),
+      destination_attribute: :document_id,
       public?: true
     )
   end
