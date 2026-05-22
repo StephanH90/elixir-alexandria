@@ -57,7 +57,7 @@ defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
                 aria-haspopup="true"
                 aria-expanded="false"
               />
-              <.uk_dropdown id="tooltip"} class="category-nav__category__info-box">
+              <.uk_dropdown id="tooltip" class="category-nav__category__info-box">
                 <div>
                   <p>Description</p>
                 </div>
