@@ -1,6 +1,8 @@
 defmodule AlexandriaDevWeb.Components.Browser.CategoryNav do
   use Phoenix.Component
+  use Phoenix.VerifiedRoutes, endpoint: AlexandriaDevWeb.Endpoint, router: AlexandriaDevWeb.Router
   import Uikit.Components
+  alias Phoenix.LiveView.JS
 
   attr :categories, :list, required: true
   attr :active_category, Alexandria.Core.Category, default: nil
