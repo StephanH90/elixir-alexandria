@@ -142,6 +142,10 @@ defmodule Alexandria.Core.Document do
     end
   end
 
+  preparations do
+    prepare build(load: :display_title)
+  end
+
   attributes do
     uuid_primary_key :id, public?: true
     attribute :title, Alexandria.Types.Multilingual, allow_nil?: false, public?: true
