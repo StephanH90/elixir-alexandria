@@ -35,7 +35,8 @@ defmodule AlexandriaDev.MixProject do
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
       {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev},
       {:phoenix_live_reload, "~> 1.4", only: :dev},
-      {:phoenix_test, "~> 0.8", only: :test, runtime: false}
+      {:phoenix_test, "~> 0.8", only: :test, runtime: false},
+      {:mix_test_interactive, "~> 5.1", only: :dev, runtime: false}
     ]
   end
 
