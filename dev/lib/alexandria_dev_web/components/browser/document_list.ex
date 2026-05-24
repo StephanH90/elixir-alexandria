@@ -16,8 +16,7 @@ defmodule AlexandriaDevWeb.Components.Browser.DocumentList do
             data-test-sort="title"
             role="button"
           >
-            Dokumententitel
-            <.uk_icon name="chevron-down" class="uk-margin-small-left" />
+            Dokumententitel <.uk_icon name="chevron-down" class="uk-margin-small-left" />
           </th>
           <th class="uk-text-nowrap document-list-item-marks" data-test-sort="marks" role="none">
             <span hidden="">Markierungen</span>
@@ -27,40 +26,35 @@ defmodule AlexandriaDevWeb.Components.Browser.DocumentList do
             data-test-sort="date"
             role="button"
           >
-            Datum
-            <.uk_icon name="chevron-down" class="uk-margin-small-left" />
+            Datum <.uk_icon name="chevron-down" class="uk-margin-small-left" />
           </th>
           <th
             class="uk-text-nowrap document-list-item-modifiedAt cursor-pointer"
             data-test-sort="modifiedAt"
             role="button"
           >
-            Änderungsdatum
-            <.uk_icon name="chevron-down" class="uk-margin-small-left" />
+            Änderungsdatum <.uk_icon name="chevron-down" class="uk-margin-small-left" />
           </th>
           <th
             class="uk-text-nowrap document-list-item-createdByUser cursor-pointer"
             data-test-sort="createdByUser"
             role="button"
           >
-            Ersteller
-            <.uk_icon name="chevron-down" class="uk-margin-small-left" />
+            Ersteller <.uk_icon name="chevron-down" class="uk-margin-small-left" />
           </th>
           <th
             class="uk-text-nowrap document-list-item-createdByGroup cursor-pointer"
             data-test-sort="createdByGroup"
             role="button"
           >
-            Organisation
-            <.uk_icon name="chevron-down" class="uk-margin-small-left" />
+            Organisation <.uk_icon name="chevron-down" class="uk-margin-small-left" />
           </th>
           <th
             class="uk-text-nowrap document-list-item-category cursor-pointer"
             data-test-sort="category"
             role="button"
           >
-            Kategorie
-            <.uk_icon name="chevron-down" class="uk-margin-small-left" />
+            Kategorie <.uk_icon name="chevron-down" class="uk-margin-small-left" />
           </th>
         </tr>
       </thead>
